@@ -14,6 +14,56 @@ Options:
 - `-Configuration Release` (default) or `Debug`
 - `-Clean` to clean artifacts before building
 
+Output: Built executables in `tools/` directory (flattened, no framework subfolder)
+
+### Run Tools Directly from Source
+
+Instead of building and distributing, you can run tools directly using `dotnet run`:
+
+**Smtp tool example:**
+```bash
+cd src/Smtp
+
+# List unread emails (default 30, newest first)
+dotnet run -- summary
+
+# With server selection
+dotnet run -- summary --servername primary
+
+# Custom limit
+dotnet run -- summary --limit 50
+
+# Get email details
+dotnet run -- get-details --id 123
+
+# Mark as read
+dotnet run -- mark-read --id 123
+
+# View help
+dotnet run -- --help
+dotnet run -- summary --help
+```
+
+**HelloTool example:**
+```bash
+cd src/HelloTool
+
+# Greet someone
+dotnet run -- greet "World"
+
+# Uppercase output
+dotnet run -- greet "World" --shout
+
+# View help
+dotnet run -- --help
+```
+
+**Notes:**
+- `dotnet run` requires .NET SDK installed
+- Dependencies are restored automatically
+- Use `--` to separate dotnet arguments from tool arguments
+- This is useful for development; use `build.ps1` for distribution
+
 ### Project Structure
 
 ```
