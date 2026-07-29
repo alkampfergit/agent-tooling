@@ -1,13 +1,14 @@
 {
+  "enabledPlugins": {
+    "github-alk@agent-plugins-base": true
+  },
   "extraKnownMarketplaces": {
     "agent-plugins-base": {
       "source": {
         "source": "github",
         "repo": "alkampfergit/agent-plugins-base"
-      }
+      },
+      "autoUpdate": true
     }
-  },
-  "enabledPlugins": {
-    "github-alk@agent-plugins-base": true
   }
 }
