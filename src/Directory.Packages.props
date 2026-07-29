@@ -9,5 +9,10 @@
     <!-- Add common dependencies here -->
     <!-- Example: <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" /> -->
     <PackageVersion Include="System.CommandLine" Version="2.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageVersion Include="NUnit" Version="4.3.2" />
+    <PackageVersion Include="NUnit.Analyzers" Version="4.7.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="5.0.0" />
   </ItemGroup>
 </Project>

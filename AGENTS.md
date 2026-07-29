@@ -47,6 +47,22 @@ This will:
 - Copy all NuGet dependencies to `tools/`
 - Maintain dependency versions as defined in `Directory.Packages.props`
 
+## Testing
+
+All tools share a single NUnit test project: `src/Agent.Tools.Tests/`.
+
+- Add a `ProjectReference` from the test project to each tool's `.csproj`.
+- Tests invoke the tool's compiled DLL as a subprocess via `CliRunner` (black-box,
+  through the real `System.CommandLine` parsing) rather than calling internal
+  methods directly.
+- Every test class/method must carry `[Category("<ToolName>")]` so tests for one
+  tool can be run in isolation, e.g. `dotnet test --filter "Category=HelloTool"`.
+- Additionally categorize each test as `[Category("Unit")]` (no external
+  dependencies) or `[Category("Integration")]` (calls a real external service,
+  e.g. GitHub's API). Integration tests should not run by default in CI unless
+  credentials are configured; filter them out with
+  `dotnet test --filter "Category!=Integration"`.
+
 ## Package Management
 
 All NuGet package versions are managed centrally in `Directory.Packages.props`. This ensures:
