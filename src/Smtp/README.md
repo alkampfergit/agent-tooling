@@ -127,12 +127,16 @@ Options:
 
 ## Configuration
 
-### File Location
-The tool searches for configuration in this order:
-1. `appsettings.json` in current working directory
-2. `agent-tooling.json` in parent directories (up to filesystem root)
+### File Location & Hierarchy
+The tool searches for configuration in this order (first match wins):
+1. **`appsettings.json`** in current working directory (tool-specific, overrides shared config)
+2. **`agent-tooling.json`** in parent directories (up to filesystem root, shared across all tools)
 
-### Server Configuration
+This allows both per-tool configuration and shared/organizational configuration.
+
+### Example: Per-Tool Configuration (appsettings.json)
+Place in the directory where you run the tool:
+
 ```json
 {
   "Smtp": {
@@ -142,13 +146,43 @@ The tool searches for configuration in this order:
         "Address": "imap.example.com",
         "Port": 993,
         "Username": "user@example.com",
-        "Password": "app-secret",
+        "Password": "app-password",
         "UseHttps": true
       }
     ]
   }
 }
 ```
+
+### Example: Shared Configuration (agent-tooling.json)
+Place in a parent directory (e.g., project root) to share across all tools:
+
+```json
+{
+  "Smtp": {
+    "Servers": [
+      {
+        "Name": "work",
+        "Address": "imap.company.com",
+        "Port": 993,
+        "Username": "user@company.com",
+        "Password": "corp-password",
+        "UseHttps": true
+      },
+      {
+        "Name": "personal",
+        "Address": "imap.gmail.com",
+        "Port": 993,
+        "Username": "user@gmail.com",
+        "Password": "app-password",
+        "UseHttps": true
+      }
+    ]
+  }
+}
+```
+
+### Server Configuration Fields
 
 **Required fields:**
 - `Name`: Identifier for the server (used with `--servername`)

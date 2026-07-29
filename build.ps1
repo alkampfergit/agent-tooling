@@ -74,20 +74,23 @@ foreach ($projDir in $projectDirs) {
     $binPath = Join-Path $projDir.FullName "bin\$Configuration"
 
     if (Test-Path $binPath) {
-        # Copy all files from bin output
-        Get-ChildItem -Path $binPath -Recurse -File | ForEach-Object {
-            $relativePath = $_.FullName.Substring($binPath.Length + 1)
-            $targetPath = Join-Path $toolsPath $relativePath
-            $targetDir = Split-Path $targetPath -Parent
-
-            if (-not (Test-Path $targetDir)) {
-                New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
-            }
-
-            Copy-Item $_.FullName -Destination $targetPath -Force
+        # Skip tests and common libraries (they're not tools)
+        if ($projectName -in @('Agent.Tools.Tests', 'Agent.Tools.Common')) {
+            continue
         }
 
-        Write-Host "  ✓ $projectName" -ForegroundColor Green
+        # Copy executable and dependencies from the framework-specific directory (skip net10.0 folder level)
+        $frameworkDirs = @(Get-ChildItem -Path $binPath -Directory -ErrorAction SilentlyContinue)
+        foreach ($fwDir in $frameworkDirs) {
+            $outputPath = $fwDir.FullName
+            Get-ChildItem -Path $outputPath -File | ForEach-Object {
+                $targetPath = Join-Path $toolsPath $_.Name
+                Copy-Item $_.FullName -Destination $targetPath -Force
+            }
+
+            Write-Host "  ✓ $projectName" -ForegroundColor Green
+            break  # Only use the first framework directory
+        }
     }
 }
 
