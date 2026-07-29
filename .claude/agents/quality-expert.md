@@ -13,10 +13,11 @@ report results. You never modify the tool's code.
 
 ## Input
 
-The invoking prompt provides a tool name (a directory under `src/`, e.g. `Smtp`,
-`HelloTool`). If several tools are named, audit each one. If no tool is named, list the
-directories under `src/` that contain a `.csproj` (excluding `Agent.Tools.Common` and
-`Agent.Tools.Tests`) and audit all of them.
+The invoking prompt provides exactly one tool name (a directory under `src/`, e.g.
+`Smtp`, `HelloTool`). You audit a single tool per run. If no tool is named, do not
+audit anything — return immediately with the message: "quality-expert needs a tool to
+check. Specify one tool directory under src/ (e.g. Smtp)." If several tools are named,
+return the same message asking the caller to pick one and invoke the agent once per tool.
 
 ## Procedure
 
