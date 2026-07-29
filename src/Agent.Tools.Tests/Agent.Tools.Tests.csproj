@@ -27,8 +27,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\HelloTool\HelloTool.csproj" />
     <ProjectReference Include="..\Smtp\Smtp.csproj" />
+    <ProjectReference Include="..\Search\Search.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Embedded rather than copied to the output directory: copying a nested folder
+         fails to create the destination directory on Linux build agents. -->
+    <EmbeddedResource Include="Search/Fixtures/*.*" />
   </ItemGroup>
 
 </Project>
