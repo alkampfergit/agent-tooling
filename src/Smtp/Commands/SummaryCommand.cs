@@ -9,11 +9,12 @@ public static class SummaryCommand
 {
     public static Command Create()
     {
-        var serverNameOption = new Option<string?>(
-            "--servername",
-            "Name of the configured server");
+        var serverNameOption = new Option<string?>("--servername")
+        {
+            Description = "Name of the configured server (optional if only one server configured)"
+        };
 
-        var command = new Command("summary", "List unread emails from the inbox")
+        var command = new Command("summary", "List unread emails from inbox")
         {
             serverNameOption
         };

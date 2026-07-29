@@ -9,15 +9,17 @@ public static class GetDetailsCommand
 {
     public static Command Create()
     {
-        var idOption = new Option<string?>(
-            "--id",
-            "Email unique ID from summary command");
+        var idOption = new Option<string?>("--id")
+        {
+            Description = "Email unique ID from summary command (required)"
+        };
 
-        var serverNameOption = new Option<string?>(
-            "--servername",
-            "Name of the configured server");
+        var serverNameOption = new Option<string?>("--servername")
+        {
+            Description = "Name of the configured server (optional if only one server configured)"
+        };
 
-        var command = new Command("get-details", "Retrieve full email details by ID")
+        var command = new Command("get-details", "Retrieve full email details by ID with HTML-to-text conversion")
         {
             idOption,
             serverNameOption

@@ -10,13 +10,15 @@ public static class MarkReadCommand
 {
     public static Command Create()
     {
-        var idOption = new Option<string?>(
-            "--id",
-            "Email unique ID");
+        var idOption = new Option<string?>("--id")
+        {
+            Description = "Email unique ID (required)"
+        };
 
-        var serverNameOption = new Option<string?>(
-            "--servername",
-            "Name of the configured server");
+        var serverNameOption = new Option<string?>("--servername")
+        {
+            Description = "Name of the configured server (optional if only one server configured)"
+        };
 
         var command = new Command("mark-read", "Mark an email as read")
         {
