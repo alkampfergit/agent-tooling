@@ -134,10 +134,9 @@ if ($tool) {
         # Shared test project: narrow via NUnit Category trait instead.
         # The VSTest filter spec documents value lookups as case-insensitive, but the
         # NUnit3TestAdapter's Category/TestCategory matching is case-sensitive in practice.
-        # Category values in this repo are PascalCase (e.g. "Smtp", "HelloTool"), so
-        # normalize the incoming tool name to PascalCase before building the filter.
-        $toolCategory = (Get-Culture).TextInfo.ToTitleCase($tool.ToLowerInvariant())
-        $toolFilter = "Category=$toolCategory"
+        # Category values in this repo are lowercase (e.g. "smtp", "hellotool"), so
+        # normalize the incoming tool name to lowercase before building the filter.
+        $toolFilter = "Category=$($tool.ToLowerInvariant())"
         $effectiveFilter = if ($effectiveFilter) { "($effectiveFilter)&($toolFilter)" } else { $toolFilter }
     }
 }

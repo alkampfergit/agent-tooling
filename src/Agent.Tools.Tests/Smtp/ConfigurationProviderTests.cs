@@ -3,7 +3,9 @@ namespace Agent.Tools.Tests.Smtp;
 using System.Text.Json;
 using global::Smtp.Configuration;
 
-[Category("Smtp")]
+[TestFixture]
+[Category("smtp")]
+[Category("Unit")]
 public class ConfigurationProviderTests
 {
     [Test]

@@ -1,6 +1,6 @@
 ---
 name: quality-expert
-description: Runs the repository quality checks against a single CLI tool and reports pass/fail per rule. Use whenever the user asks to verify, audit, or check the quality of a tool (e.g. "check quality of Smtp", "does HelloTool pass the quality rules?", "run quality checks"), or after implementing a new tool to confirm it meets the repo standards. If no tool is named, it identifies the tool from the current branch's diff against master. Do NOT use for reviewing code diffs or pull requests — use /review for that.
+description: Runs a single repository quality rule against a single CLI tool and reports pass/fail. Use whenever the user asks to verify, audit, or check the quality of a tool (e.g. "check quality of Smtp", "does HelloTool pass the help-option rule?", "run quality checks"), or after implementing a new tool to confirm it meets the repo standards. If no tool is named, it identifies the tool from the current branch's diff against master. If no rule is named, it asks the caller which rule (from `rules/`) to apply rather than running all of them. Do NOT use for reviewing code diffs or pull requests — use /review for that.
 tools: Read, Glob, Grep, Bash, PowerShell
 model: inherit
 ---
@@ -14,7 +14,9 @@ report results. You never modify the tool's code.
 ## Input
 
 The invoking prompt provides exactly one tool name (a directory under `src/`, e.g.
-`Smtp`, `HelloTool`). You audit a single tool per run.
+`Smtp`, `HelloTool`) and, optionally, one rule name (a filename under `rules/` without
+the `.md` extension, e.g. `help-option`). You audit a single tool against a single rule
+per run.
 
 If no tool is named, derive it from the current branch's difference with master:
 
@@ -31,20 +33,33 @@ If no tool is named, derive it from the current branch's difference with master:
 If several tools are named explicitly, return the same message asking the caller to
 pick one and invoke the agent once per tool.
 
+If no rule is named, do not default to running every rule. List the available rule ids
+(the `*.md` filenames in `rules/`, minus the extension, excluding `README.md`) and ask
+the caller which one to apply, e.g.: "quality-expert needs a rule to check for
+<ToolName>. Available rules: help-option, common-code-placement, test-categories. Which
+one should I run?" Wait for the caller's answer before doing anything else.
+
+If several rules are named explicitly, return the same message asking the caller to
+pick one and invoke the agent once per rule.
+
+If the named rule doesn't match any file in `rules/`, report the mismatch and list the
+available rule ids instead of guessing.
+
 ## Procedure
 
-1. **Load the rules.** Read every `*.md` file in `rules/` except `README.md`. Each file
-   is one rule with a Requirement, How to verify, and Pass criteria section. The rule
-   set is dynamic — never hardcode rule knowledge; always re-read the directory.
+1. **Load the rule set.** List every `*.md` file in `rules/` except `README.md` to
+   resolve the rule name (see Input above). The rule set is dynamic — never hardcode
+   rule knowledge; always re-read the directory. Then read the single rule file that
+   was selected. It has a Requirement, How to verify, and Pass criteria section.
 2. **Confirm the tool builds.** Run `dotnet build src/<ToolName>` first. If the build
-   fails, report it and mark every rule as BLOCKED — do not attempt the checks.
-3. **Execute each rule.** Follow the rule's "How to verify" commands exactly, running
+   fails, report it and mark the rule as BLOCKED — do not attempt the check.
+3. **Execute the rule.** Follow the rule's "How to verify" commands exactly, running
    the tool via `dotnet run --project src/<ToolName> -- <args>`. Capture exit codes and
    full output. Evaluate every item in the rule's Pass criteria against the evidence —
    including criteria that require reading the tool's source (e.g. cross-checking config
    keys). Judge each criterion objectively; when output is ambiguous, fail the criterion
    and quote the output.
-4. **Check documented exemptions.** If a rule allows exemptions (e.g. a tool with no
+4. **Check documented exemptions.** If the rule allows exemptions (e.g. a tool with no
    configuration), verify the exemption condition genuinely holds in the code and that
    any required documentation (README statement) exists before marking N/A.
 
@@ -53,12 +68,9 @@ pick one and invoke the agent once per tool.
 Return a report the caller can act on without re-running anything:
 
 ```
-## Quality report: <ToolName>
+## Quality report: <ToolName> / <rule-id>
 
-| Rule | Result |
-|------|--------|
-| help-option | PASS |
-| config-sample-option | FAIL |
+Result: PASS
 
 ### <rule-id>: FAIL
 - Criterion: <the unmet pass criterion>
@@ -66,6 +78,5 @@ Return a report the caller can act on without re-running anything:
 - Suggested fix: <one-line pointer, e.g. "add description to --port option in Program.cs:42">
 ```
 
-Results are PASS, FAIL, N/A (documented exemption), or BLOCKED (build failure).
-Only failed rules need a detail section; passing rules need only the table row.
-End with a one-line verdict: how many rules passed out of the total.
+Result is PASS, FAIL, N/A (documented exemption), or BLOCKED (build failure). Only a
+FAIL result needs the detail section.
