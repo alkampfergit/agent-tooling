@@ -28,26 +28,25 @@ if (-not (Test-Path $slnPath)) {
     exit 1
 }
 
-# Clean previous build artifacts if requested
+# Always clean tools directory to start fresh
+Write-Host "Cleaning tools directory..." -ForegroundColor Yellow
+if (Test-Path $toolsPath) {
+    Remove-Item $toolsPath -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Clean build artifacts if requested
 if ($Clean) {
-    Write-Host "Cleaning previous build artifacts..." -ForegroundColor Yellow
-
-    if (Test-Path $toolsPath) {
-        Remove-Item $toolsPath -Recurse -Force -ErrorAction SilentlyContinue
-    }
-
+    Write-Host "Cleaning build artifacts..." -ForegroundColor Yellow
     Push-Location $srcPath
     dotnet clean --configuration $Configuration -nologo --verbosity quiet
     Pop-Location
-
-    Write-Host "Clean completed" -ForegroundColor Green
-    Write-Host ""
 }
 
-# Create tools directory if it doesn't exist
-if (-not (Test-Path $toolsPath)) {
-    New-Item -ItemType Directory -Path $toolsPath -Force | Out-Null
-}
+Write-Host "Clean completed" -ForegroundColor Green
+Write-Host ""
+
+# Create tools directory
+New-Item -ItemType Directory -Path $toolsPath -Force | Out-Null
 
 Write-Host "Building solution (Configuration: $Configuration)..." -ForegroundColor Yellow
 
