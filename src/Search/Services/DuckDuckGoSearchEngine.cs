@@ -15,8 +15,8 @@ public class DuckDuckGoSearchEngine : ISearchEngine
 {
     public const string EngineName = "duckduckgo";
 
-    private const string InstantAnswerUrl = "https://api.duckduckgo.com/";
-    private const string HtmlResultsUrl = "https://html.duckduckgo.com/html/";
+    private const string InstantAnswerUrl = "https://api.duckduckgo.com/"; // NOSONAR: fixed DuckDuckGo API endpoint, not environment-dependent
+    private const string HtmlResultsUrl = "https://html.duckduckgo.com/html/"; // NOSONAR: fixed DuckDuckGo API endpoint, not environment-dependent
 
     private readonly HttpClient _httpClient;
 

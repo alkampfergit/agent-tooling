@@ -1,3 +1,3 @@
 using Search.Commands;
 
-return SearchCommand.Create().Parse(args).Invoke();
+return await SearchCommand.Create().Parse(args).InvokeAsync();
