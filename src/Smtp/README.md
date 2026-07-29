@@ -36,24 +36,24 @@ Or place in a parent directory as `agent-tooling.json` for shared configuration 
 
 ### Usage
 
-**List unread emails:**
+**List unread emails (sorted by date, newest first):**
 ```bash
-smtp summary                    # Auto-select if only one server
-smtp summary --servername primary
+smtp summary                              # Auto-select, default limit 30
+smtp summary --servername primary         # With server selection
+smtp summary --limit 100                  # Custom limit
+smtp summary --servername primary --limit 50
 ```
 
-Output:
-```json
-[
-  {
-    "id": "123",
-    "from": "sender@example.com",
-    "subject": "Meeting tomorrow",
-    "date": "2026-01-15T10:30:00Z",
-    "preview": "Let's discuss the project..."
-  }
-]
+Output (CSV - optimized for LLM token efficiency):
 ```
+id,from,subject,date,preview
+124,another@example.com,Re: Project,2026-01-15T11:00:00Z,Thanks for the update...
+123,sender@example.com,Meeting tomorrow,2026-01-15T10:30:00Z,Let's discuss the project...
+```
+
+**Sorting:** Results are sorted by date (newest first)  
+**Default limit:** 30 emails (use `--limit` to override)  
+**Token efficiency:** CSV format saves ~50% tokens vs. pretty-printed JSON
 
 **Get full email details:**
 ```bash

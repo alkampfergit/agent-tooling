@@ -58,9 +58,8 @@ public static class GetDetailsCommand
                 return 2;
             }
 
-            var json = JsonSerializer.Serialize(
-                details,
-                new JsonSerializerOptions { WriteIndented = true });
+            // Compact JSON for single objects (no indentation for token efficiency)
+            var json = JsonSerializer.Serialize(details);
             Console.WriteLine(json);
 
             return 0;

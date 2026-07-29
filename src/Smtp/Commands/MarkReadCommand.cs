@@ -60,9 +60,8 @@ public static class MarkReadCommand
                 Id = id
             };
 
-            var json = JsonSerializer.Serialize(
-                result,
-                new JsonSerializerOptions { WriteIndented = true });
+            // Compact JSON for single objects (no indentation for token efficiency)
+            var json = JsonSerializer.Serialize(result);
             Console.WriteLine(json);
 
             return success ? 0 : 2;

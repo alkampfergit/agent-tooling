@@ -1,6 +1,6 @@
 ---
 name: quality-expert
-description: Runs the repository quality checks against a CLI tool and reports pass/fail per rule. Use whenever the user asks to verify, audit, or check the quality of a tool (e.g. "check quality of Smtp", "does HelloTool pass the quality rules?", "run quality checks"), or after implementing a new tool to confirm it meets the repo standards. Do NOT use for reviewing code diffs or pull requests — use /review for that.
+description: Runs the repository quality checks against a single CLI tool and reports pass/fail per rule. Use whenever the user asks to verify, audit, or check the quality of a tool (e.g. "check quality of Smtp", "does HelloTool pass the quality rules?", "run quality checks"), or after implementing a new tool to confirm it meets the repo standards. If no tool is named, it identifies the tool from the current branch's diff against master. Do NOT use for reviewing code diffs or pull requests — use /review for that.
 tools: Read, Glob, Grep, Bash, PowerShell
 model: inherit
 ---
@@ -14,10 +14,22 @@ report results. You never modify the tool's code.
 ## Input
 
 The invoking prompt provides exactly one tool name (a directory under `src/`, e.g.
-`Smtp`, `HelloTool`). You audit a single tool per run. If no tool is named, do not
-audit anything — return immediately with the message: "quality-expert needs a tool to
-check. Specify one tool directory under src/ (e.g. Smtp)." If several tools are named,
-return the same message asking the caller to pick one and invoke the agent once per tool.
+`Smtp`, `HelloTool`). You audit a single tool per run.
+
+If no tool is named, derive it from the current branch's difference with master:
+
+1. Run `git diff master...HEAD --name-only` and collect the distinct `src/<Tool>/`
+   directories that contain changed files, ignoring `Agent.Tools.Common` and
+   `Agent.Tools.Tests`.
+2. Exactly one tool changed → audit that tool, and state in the report that it was
+   selected from the branch diff.
+3. Zero or more than one tool changed (or the diff fails, e.g. no master ref) →
+   audit nothing and return: "quality-expert needs a tool to check. The branch diff
+   against master identifies <none / these tools: ...>. Specify one tool directory
+   under src/ (e.g. Smtp)."
+
+If several tools are named explicitly, return the same message asking the caller to
+pick one and invoke the agent once per tool.
 
 ## Procedure
 
