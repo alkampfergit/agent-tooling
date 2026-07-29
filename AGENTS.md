@@ -55,8 +55,8 @@ All tools share a single NUnit test project: `src/Agent.Tools.Tests/`.
 - Tests invoke the tool's compiled DLL as a subprocess via `CliRunner` (black-box,
   through the real `System.CommandLine` parsing) rather than calling internal
   methods directly.
-- Every test class/method must carry `[Category("<ToolName>")]` so tests for one
-  tool can be run in isolation, e.g. `dotnet test --filter "Category=HelloTool"`.
+- Every test class/method must carry `[Category("<toolname>")]` where the tool name
+  is lowercase, so tests for one tool can be run in isolation, e.g. `dotnet test --filter "Category=hellotool"`.
 - Additionally categorize each test as `[Category("Unit")]` (no external
   dependencies) or `[Category("Integration")]` (calls a real external service,
   e.g. GitHub's API). Integration tests should not run by default in CI unless
@@ -78,9 +78,12 @@ All NuGet package versions are managed centrally in `Directory.Packages.props`. 
 
 Before implementing:
 - State your assumptions explicitly. If uncertain, ask.
+- Use Context7 and Microsoft MCP learn to ground your assumptions in reality.
 - If multiple interpretations exist, present them - don't pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
 - If something is unclear, stop. Name what's confusing. Ask.
+- Never consider a tool ready if some test for the tool fails.
+- All test classes must have a Category attribute with the name of the tool they tests
 
 ## 2. Simplicity First
 
@@ -124,3 +127,24 @@ For multi-step tasks, state a brief plan:
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
+```
+
+## 5. Atomic Command Execution
+
+**Use absolute paths, not cd. Each command is self-contained.**
+
+- **NEVER** use `cd "path" && command` — the cd is a leftover habit from interactive shell work
+- **ALWAYS** pass absolute paths directly to commands
+- This ensures: working-directory clarity, no side effects, atomicity
+
+**Bad:**
+```bash
+cd "A:/Develop/github/agent-tooling" && dotnet build
+```
+
+**Good:**
+```bash
+dotnet build "A:/Develop/github/agent-tooling/src/Agent.Tools.sln"
+```
+
+Each command should be self-contained and verifiable on its own.

@@ -12,7 +12,74 @@ A collection of .NET CLI tools for GitHub agent operations. Each tool is designe
 
 Options:
 - `-Configuration Release` (default) or `Debug`
-- `-Clean` to clean artifacts before building
+- `-Clean` to clean build artifacts from src/
+
+Output: Built executables in `tools/` directory (flattened, no framework subfolder)
+
+**Important:** The `tools/` directory is cleaned and rebuilt from scratch each time. Copy `appsettings.json` to `tools/` if you want to run tools from that directory (see Configuration section below).
+
+### Run Tools Directly from Source
+
+Instead of building and distributing, you can run tools directly using `dotnet run`:
+
+**Smtp tool example:**
+```bash
+cd src/Smtp
+
+# List unread emails (default 30, newest first)
+dotnet run -- summary
+
+# With server selection
+dotnet run -- summary --servername primary
+
+# Custom limit
+dotnet run -- summary --limit 50
+
+# Get email details
+dotnet run -- get-details --id 123
+
+# Mark as read
+dotnet run -- mark-read --id 123
+
+# View help
+dotnet run -- --help
+dotnet run -- summary --help
+```
+
+**HelloTool example:**
+```bash
+cd src/HelloTool
+
+# Greet someone
+dotnet run -- greet "World"
+
+# Uppercase output
+dotnet run -- greet "World" --shout
+
+# View help
+dotnet run -- --help
+```
+
+**Running from tools/ directory:**
+
+After building with `build.ps1`, you can run executables directly from `tools/`:
+
+```bash
+# Copy your configuration to tools/
+cp appsettings.json tools/
+
+# Run from tools directory
+cd tools
+.\Smtp.exe summary
+.\Smtp.exe summary --limit 50
+```
+
+**Notes:**
+- `dotnet run` requires .NET SDK installed and runs from source
+- Tools in `tools/` directory are fully built and need no SDK
+- Configuration files must be in the working directory when running tools
+- Dependencies are included in `tools/` directory
+- Use `--` to separate dotnet arguments from tool arguments (when using `dotnet run`)
 
 ### Project Structure
 

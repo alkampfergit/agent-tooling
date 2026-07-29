@@ -33,3 +33,4 @@ obj/
 # Environment
 .env
 .env.local
+testresults

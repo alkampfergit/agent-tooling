@@ -14,6 +14,8 @@ You are responsible for scaffolding new CLI tools in the agent-tooling repositor
 5. Generate documentation templates
 6. Report what was created
 
+> **MANDATORY**: every new project you scaffold MUST be added to `src/Agent.Tools.sln` (step 5 under Instructions). A project that exists on disk but isn't referenced in the solution will silently not build or run under `dotnet build`/`dotnet test`/`build.ps1`, which only operate against the solution — this is not optional cleanup, it is part of scaffolding a working project. Never report the scaffold as complete without having verified this (see Validation).
+
 ## Responsibilities
 
 ### Input
@@ -151,7 +153,7 @@ public class <ToolName>Tests
 
 After scaffolding:
 1. Ensure all files are created in the correct locations
-2. Verify the solution file was updated (check with `dotnet sln Agent.Tools.sln list`)
+2. **Required**: verify the new project appears in the solution — run `dotnet sln src/Agent.Tools.sln list` and confirm `<toolName>/<toolName>.csproj` is listed. If it's missing, add it before reporting completion; do not skip or defer this step.
 3. Verify the test project `.csproj` includes the new ProjectReference
 4. Confirm the test file is syntactically valid (no compilation errors)
 
