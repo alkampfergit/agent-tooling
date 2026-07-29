@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HelloTool\HelloTool.csproj" />
+    <ProjectReference Include="..\Smtp\Smtp.csproj" />
   </ItemGroup>
 
 </Project>

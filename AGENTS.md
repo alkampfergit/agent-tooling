@@ -78,6 +78,7 @@ All NuGet package versions are managed centrally in `Directory.Packages.props`. 
 
 Before implementing:
 - State your assumptions explicitly. If uncertain, ask.
+- Use Context7 and Microsoft MCP learn to ground your assumptions in reality.
 - If multiple interpretations exist, present them - don't pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
 - If something is unclear, stop. Name what's confusing. Ask.
