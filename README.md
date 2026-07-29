@@ -12,9 +12,11 @@ A collection of .NET CLI tools for GitHub agent operations. Each tool is designe
 
 Options:
 - `-Configuration Release` (default) or `Debug`
-- `-Clean` to clean artifacts before building
+- `-Clean` to clean build artifacts from src/
 
 Output: Built executables in `tools/` directory (flattened, no framework subfolder)
+
+**Important:** The `tools/` directory is cleaned and rebuilt from scratch each time. Copy `appsettings.json` to `tools/` if you want to run tools from that directory (see Configuration section below).
 
 ### Run Tools Directly from Source
 
@@ -58,11 +60,26 @@ dotnet run -- greet "World" --shout
 dotnet run -- --help
 ```
 
+**Running from tools/ directory:**
+
+After building with `build.ps1`, you can run executables directly from `tools/`:
+
+```bash
+# Copy your configuration to tools/
+cp appsettings.json tools/
+
+# Run from tools directory
+cd tools
+.\Smtp.exe summary
+.\Smtp.exe summary --limit 50
+```
+
 **Notes:**
-- `dotnet run` requires .NET SDK installed
-- Dependencies are restored automatically
-- Use `--` to separate dotnet arguments from tool arguments
-- This is useful for development; use `build.ps1` for distribution
+- `dotnet run` requires .NET SDK installed and runs from source
+- Tools in `tools/` directory are fully built and need no SDK
+- Configuration files must be in the working directory when running tools
+- Dependencies are included in `tools/` directory
+- Use `--` to separate dotnet arguments from tool arguments (when using `dotnet run`)
 
 ### Project Structure
 
