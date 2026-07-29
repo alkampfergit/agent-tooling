@@ -19,14 +19,14 @@ public class DuckDuckGoSearchEngineTests
 
         var response = await engine.SearchAsync("netmq performance", 10, CancellationToken.None);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.Query, Is.EqualTo("netmq performance"));
             Assert.That(response.Engine, Is.EqualTo("duckduckgo"));
             Assert.That(response.Results, Is.Not.Empty);
             Assert.That(response.Abstract, Is.Not.Null);
             Assert.That(response.Abstract!.Text, Does.Contain("ZeroMQ"));
-        });
+        }
     }
 
     [Test]
@@ -46,11 +46,11 @@ public class DuckDuckGoSearchEngineTests
 
         var response = await engine.SearchAsync("netmq", 10, CancellationToken.None);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.Abstract, Is.Null);
             Assert.That(response.Results, Is.Not.Empty);
-        });
+        }
     }
 
     [Test]
@@ -60,11 +60,11 @@ public class DuckDuckGoSearchEngineTests
 
         var response = await engine.SearchAsync("netmq", 10, CancellationToken.None);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.Abstract, Is.Null);
             Assert.That(response.Results, Is.Not.Empty);
-        });
+        }
     }
 
     [Test]
@@ -120,12 +120,12 @@ public class DuckDuckGoSearchEngineTests
 
         await engine.SearchAsync("netmq performance", 10, CancellationToken.None);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(handler.InstantAnswerUri, Does.Contain("q=netmq%20performance"));
             Assert.That(handler.InstantAnswerUri, Does.Contain("format=json"));
             Assert.That(handler.HtmlRequestBody, Is.EqualTo("q=netmq+performance"));
-        });
+        }
     }
 
     /// <summary>

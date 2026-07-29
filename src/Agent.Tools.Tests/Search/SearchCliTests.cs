@@ -17,14 +17,14 @@ public class SearchCliTests
         var (exitCode, stdOut, _) = CliRunner.Run(ToolDll, "--help");
 
         Assert.That(exitCode, Is.Zero);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(stdOut, Does.Contain("Web search CLI tool"));
             Assert.That(stdOut, Does.Contain("query"));
             Assert.That(stdOut, Does.Contain("--engine"));
             Assert.That(stdOut, Does.Contain("--max-results"));
             Assert.That(stdOut, Does.Contain("--timeout"));
-        });
+        }
     }
 
     [Test]
@@ -32,13 +32,13 @@ public class SearchCliTests
     {
         var (_, stdOut, _) = CliRunner.Run(ToolDll, "--help");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(stdOut, Does.Contain("Search terms"));
             Assert.That(stdOut, Does.Contain("Search engine to use"));
             Assert.That(stdOut, Does.Contain("Maximum number of results"));
             Assert.That(stdOut, Does.Contain("HTTP timeout"));
-        });
+        }
     }
 
     [TestCase("")]
@@ -65,8 +65,11 @@ public class SearchCliTests
     {
         var (exitCode, _, stdErr) = CliRunner.Run(ToolDll, "netmq", "--max-results", value);
 
-        Assert.That(exitCode, Is.EqualTo(1));
-        Assert.That(stdErr, Does.Contain("--max-results"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(exitCode, Is.EqualTo(1));
+            Assert.That(stdErr, Does.Contain("--max-results"));
+        }
     }
 
     [TestCase("0")]
@@ -75,8 +78,11 @@ public class SearchCliTests
     {
         var (exitCode, _, stdErr) = CliRunner.Run(ToolDll, "netmq", "--timeout", value);
 
-        Assert.That(exitCode, Is.EqualTo(1));
-        Assert.That(stdErr, Does.Contain("--timeout"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(exitCode, Is.EqualTo(1));
+            Assert.That(stdErr, Does.Contain("--timeout"));
+        }
     }
 
     [Test]
@@ -93,11 +99,11 @@ public class SearchCliTests
         var (exitCode, stdOut, stdErr) = CliRunner.Run(ToolDll, "netmq", "--engine", "other-engine");
 
         Assert.That(exitCode, Is.EqualTo(1));
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(stdErr, Does.Contain("not configured"));
             Assert.That(stdErr, Does.Contain("duckduckgo"));
             Assert.That(stdOut, Is.Empty, "stdout must carry JSON only");
-        });
+        }
     }
 }

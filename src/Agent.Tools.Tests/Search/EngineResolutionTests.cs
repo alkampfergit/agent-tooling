@@ -59,11 +59,11 @@ public class EngineResolutionTests
 
         var ex = Assert.Throws<SearchConfigurationException>(() => provider.ResolveEngine("third-engine"));
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("Engine 'third-engine' not configured"));
             Assert.That(ex.Message, Does.Contain("duckduckgo, other-engine"));
-        });
+        }
     }
 
     [Test]
@@ -89,12 +89,12 @@ public class EngineResolutionTests
 
         var ex = Assert.Throws<SearchConfigurationException>(() => provider.ResolveEngine(null));
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("Multiple engines configured"));
             Assert.That(ex.Message, Does.Contain("duckduckgo, other-engine"));
             Assert.That(ex.Message, Does.Contain("--engine"));
-        });
+        }
     }
 
     [Test]
@@ -133,11 +133,11 @@ public class EngineResolutionTests
         var engines = ProviderFor().GetSearchConfiguration().Engines;
 
         Assert.That(engines, Has.Count.EqualTo(1));
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(engines[0].Name, Is.EqualTo("duckduckgo"));
             Assert.That(engines[0].Default, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -148,11 +148,11 @@ public class EngineResolutionTests
         var ex = Assert.Throws<SearchConfigurationException>(
             () => SearchEngineFactory.Create("other-engine", httpClient));
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("not supported by this build"));
             Assert.That(ex.Message, Does.Contain("duckduckgo"));
-        });
+        }
     }
 
     [Test]

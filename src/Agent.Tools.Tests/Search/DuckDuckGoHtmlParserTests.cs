@@ -8,13 +8,15 @@ using global::Search.Services;
 [Category("Unit")]
 public class DuckDuckGoHtmlParserTests
 {
+    private static readonly int[] ExpectedRanks = [1, 2, 3];
+
     [Test]
     public void Parse_ExtractsTitlesUrlsAndSnippets()
     {
         var results = DuckDuckGoHtmlParser.Parse(SearchFixtures.Load(SearchFixtures.Results), 10);
 
         Assert.That(results, Is.Not.Empty);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             foreach (var result in results)
             {
@@ -25,7 +27,7 @@ public class DuckDuckGoHtmlParserTests
                     Is.True,
                     $"Not an absolute URL: {result.Url}");
             }
-        });
+        }
     }
 
     [Test]
@@ -42,7 +44,7 @@ public class DuckDuckGoHtmlParserTests
         var results = DuckDuckGoHtmlParser.Parse(SearchFixtures.Load(SearchFixtures.Results), 3);
 
         Assert.That(results, Has.Count.EqualTo(3));
-        Assert.That(results.Select(r => r.Rank), Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(results.Select(r => r.Rank), Is.EqualTo(ExpectedRanks));
     }
 
     [Test]
@@ -50,7 +52,7 @@ public class DuckDuckGoHtmlParserTests
     {
         var results = DuckDuckGoHtmlParser.Parse(SearchFixtures.Load(SearchFixtures.RedirectLinks), 10);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(results[0].Title, Is.EqualTo("NetMQ Documentation & Guide"));
             Assert.That(results[1].Snippet, Is.EqualTo("Example snippet with collapsed whitespace."));
@@ -59,7 +61,7 @@ public class DuckDuckGoHtmlParserTests
                 Assert.That(result.Title, Does.Not.Contain("&amp;"));
                 Assert.That(result.Snippet, Does.Not.Contain("&amp;"));
             }
-        });
+        }
     }
 
     [Test]
@@ -67,7 +69,7 @@ public class DuckDuckGoHtmlParserTests
     {
         var results = DuckDuckGoHtmlParser.Parse(SearchFixtures.Load(SearchFixtures.RedirectLinks), 10);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(results[0].Url, Is.EqualTo("https://netmq.readthedocs.io/en/latest/"));
             Assert.That(results[1].Url, Is.EqualTo("https://example.com/docs?a=1&b=2"));
@@ -76,7 +78,7 @@ public class DuckDuckGoHtmlParserTests
             {
                 Assert.That(result.Url, Does.Not.Contain("uddg="));
             }
-        });
+        }
     }
 
     [TestCase(

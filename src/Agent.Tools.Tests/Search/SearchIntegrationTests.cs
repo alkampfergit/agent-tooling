@@ -35,7 +35,7 @@ public class SearchIntegrationTests
         var response = await SearchOrIgnore("netmq performance", 5);
 
         Assert.That(response.Results, Is.Not.Empty);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             foreach (var result in response.Results)
             {
@@ -46,7 +46,7 @@ public class SearchIntegrationTests
                     $"Not an absolute URL: {result.Url}");
                 Assert.That(result.Url, Does.Not.Contain("uddg="));
             }
-        });
+        }
     }
 
     [Test]

@@ -14,12 +14,12 @@ public class DuckDuckGoInstantAnswerParserTests
             SearchFixtures.Load(SearchFixtures.InstantAnswerWithAbstract));
 
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result!.Text, Does.Contain("ZeroMQ"));
             Assert.That(result.Source, Is.EqualTo("Wikipedia"));
             Assert.That(result.Url, Does.StartWith("https://"));
-        });
+        }
     }
 
     [Test]
@@ -64,11 +64,11 @@ public class DuckDuckGoInstantAnswerParserTests
 
         var result = DuckDuckGoInstantAnswerParser.Parse(json);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result!.Source, Is.Null);
             Assert.That(result.Url, Is.Null);
-        });
+        }
     }
 
     [TestCase("not json at all")]
