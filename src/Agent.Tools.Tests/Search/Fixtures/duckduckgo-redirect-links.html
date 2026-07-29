@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!--
+  Hand-built fixture using DuckDuckGo's real result markup but with the /l/?uddg=
+  redirect href form. Live DDG currently serves direct URLs, but the redirect form
+  is still emitted in some regions/settings, so the parser must unwrap it.
+-->
+<html>
+<body>
+  <div id="links" class="results">
+    <div class="result results_links results_links_deep web-result ">
+      <div class="links_main links_deep result__body">
+        <h2 class="result__title">
+          <a rel="nofollow" class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fnetmq.readthedocs.io%2Fen%2Flatest%2F&amp;rut=8e1f3a">NetMQ Documentation &amp; Guide</a>
+        </h2>
+        <a class="result__snippet" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fnetmq.readthedocs.io%2Fen%2Flatest%2F&amp;rut=8e1f3a"><b>NetMQ</b> is a lightweight messaging library &amp; port of ZeroMQ.</a>
+      </div>
+    </div>
+    <div class="result results_links results_links_deep web-result ">
+      <div class="links_main links_deep result__body">
+        <h2 class="result__title">
+          <a rel="nofollow" class="result__a" href="/l/?uddg=https%3A%2F%2Fexample.com%2Fdocs%3Fa%3D1%26b%3D2&amp;rut=deadbeef">Example Docs</a>
+        </h2>
+        <a class="result__snippet" href="/l/?uddg=https%3A%2F%2Fexample.com%2Fdocs%3Fa%3D1%26b%3D2">Example    snippet   with
+          collapsed whitespace.</a>
+      </div>
+    </div>
+    <div class="result results_links results_links_deep web-result ">
+      <div class="links_main links_deep result__body">
+        <h2 class="result__title">
+          <a rel="nofollow" class="result__a" href="https://github.com/zeromq/netmq">Direct link, not a redirect</a>
+        </h2>
+        <a class="result__snippet" href="https://github.com/zeromq/netmq">Already an absolute URL.</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
