@@ -76,7 +76,6 @@ jobs:
         ./.sonar/scanner/dotnet-sonarscanner begin \
           /k:"alkampfergit_agent-tooling" \
           /o:"alkampfergit-github" \
-          /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.cs.opencover.reportsPaths="coverage/**/coverage.opencover.xml"
 
     - name: Build
@@ -93,7 +92,7 @@ jobs:
       if: always()
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+      run: ./.sonar/scanner/dotnet-sonarscanner end
 
     - name: Generate coverage report
       if: always()
