@@ -16,7 +16,11 @@ public static class DuckDuckGoHtmlParser
     private const string ResultsContainerXPath = "//*[@id='links']";
     private const string AnomalyXPath = "//*[contains(@class,'anomaly-modal')]";
 
-    private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
+    /// <summary>
+    /// Bounded because it runs over remote HTML this tool does not control.
+    /// </summary>
+    private static readonly Regex Whitespace =
+        new(@"\s+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
     /// <summary>
     /// Extracts up to <paramref name="maxResults"/> results, ranked from 1.

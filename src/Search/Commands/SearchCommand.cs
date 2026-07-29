@@ -64,7 +64,9 @@ public static class SearchCommand
         };
 
         rootCommand.SetAction(parseResult => Execute(
-            parseResult.GetValue(queryArgument)!,
+            // The argument is required and rejected when blank, so the handler only
+            // runs with a value; the fallback keeps the call non-nullable regardless.
+            parseResult.GetValue(queryArgument) ?? string.Empty,
             parseResult.GetValue(engineOption),
             parseResult.GetValue(maxResultsOption),
             parseResult.GetValue(timeoutOption)));

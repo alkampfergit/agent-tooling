@@ -24,14 +24,26 @@ internal static class SearchFixtures
 
     public const string InstantAnswerEmpty = "instant-answer-empty.json";
 
+    private const string ResourcePrefix = "Agent.Tools.Tests.Search.Fixtures.";
+
+    /// <summary>
+    /// Fixtures are embedded in the test assembly rather than copied to the output
+    /// directory, so they resolve identically on every build agent.
+    /// </summary>
     public static string Load(string fileName)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "Search", "Fixtures", fileName);
-        if (!File.Exists(path))
+        var assembly = typeof(SearchFixtures).Assembly;
+        var resourceName = ResourcePrefix + fileName;
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
         {
-            throw new FileNotFoundException($"Fixture not found: {path}");
+            var available = string.Join(", ", assembly.GetManifestResourceNames());
+            throw new FileNotFoundException(
+                $"Embedded fixture not found: {resourceName}. Available: {available}");
         }
 
-        return File.ReadAllText(path);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 }

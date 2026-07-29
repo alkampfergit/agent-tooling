@@ -37,7 +37,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Search\Fixtures\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Embedded rather than copied to the output directory: copying a nested folder
+         fails to create the destination directory on Linux build agents. -->
+    <EmbeddedResource Include="Search/Fixtures/*.*" />
   </ItemGroup>
 
 </Project>
