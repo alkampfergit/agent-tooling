@@ -76,6 +76,8 @@ Scope gates:
   skipped, tell the user what was skipped and why.
 - Paths: this is Windows; always use forward slashes in anything you write, and quote
   paths containing spaces in generated hook commands.
+- **Atomic commands:** NEVER use `cd "path" && command`. Use absolute paths directly:
+  `command "absolute/path"`. Each command is self-contained; no working-directory side effects.
 
 ## Comprehensive config session mode
 

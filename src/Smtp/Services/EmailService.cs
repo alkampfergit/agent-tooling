@@ -7,6 +7,7 @@ using MimeKit;
 using Smtp.Configuration;
 using Smtp.Models;
 using static MailKit.UniqueId;
+using MailKit.Security;
 
 public class EmailService
 {
@@ -54,7 +55,16 @@ public class EmailService
         inbox.Open(FolderAccess.ReadOnly);
 
         var uid = new UniqueId(uidValue);
-        var message = inbox.GetMessage(uid);
+        MimeMessage? message;
+        try
+        {
+            message = inbox.GetMessage(uid);
+        }
+        catch (MessageNotFoundException)
+        {
+            return null;
+        }
+
         if (message == null)
             return null;
 
@@ -86,7 +96,16 @@ public class EmailService
         inbox.Open(FolderAccess.ReadWrite);
 
         var uid = new UniqueId(uidValue);
-        var message = inbox.GetMessage(uid);
+        MimeMessage? message;
+        try
+        {
+            message = inbox.GetMessage(uid);
+        }
+        catch (MessageNotFoundException)
+        {
+            return false;
+        }
+
         if (message == null)
             return false;
 

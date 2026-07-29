@@ -1,6 +1,7 @@
 namespace Smtp.Services;
 
 using MailKit.Net.Imap;
+using MailKit.Security;
 using Smtp.Configuration;
 
 public class ImapClientFactory
@@ -10,7 +11,8 @@ public class ImapClientFactory
         var client = new ImapClient();
         try
         {
-            client.Connect(server.Address, server.Port, server.UseHttps);
+            var options = server.UseHttps ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.None;
+            client.Connect(server.Address, server.Port, options);
             client.Authenticate(server.Username, server.Password);
             return client;
         }

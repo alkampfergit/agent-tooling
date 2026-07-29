@@ -2,6 +2,7 @@ namespace Agent.Tools.Tests.Smtp;
 
 using global::Smtp.Services;
 
+[Category("Smtp")]
 public class HtmlToTextConverterTests
 {
     [Test]

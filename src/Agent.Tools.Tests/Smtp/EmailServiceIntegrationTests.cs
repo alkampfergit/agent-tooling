@@ -3,24 +3,60 @@ namespace Agent.Tools.Tests.Smtp;
 using global::Smtp.Configuration;
 using global::Smtp.Services;
 using global::Smtp.Models;
+using MailKit.Net.Imap;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
-[Explicit("Requires mailtrap or similar IMAP test mailbox to be running")]
+[TestFixture]
+[Category("smtp")]
+[Category("Integration")]
 public class EmailServiceIntegrationTests
 {
     private ServerConfig? _testServer;
+    private SmtpClient? _smtpClient;
 
     [OneTimeSetUp]
-    public void SetUp()
+    public async Task SetUp()
     {
-        try
+        _testServer = new ServerConfig
         {
-            var provider = new ConfigurationProvider();
-            _testServer = provider.GetServer("test");
-        }
-        catch
-        {
-            Assert.Ignore("No test mailbox configured with name 'test'");
-        }
+            Name = "mailtrap",
+            Address = "localhost",
+            Port = 9143,
+            Username = "mailtrap",
+            Password = "mailtrap",
+            UseHttps = false
+        };
+
+        _smtpClient = new SmtpClient();
+        _smtpClient.Connect("localhost", 9025, SecureSocketOptions.None);
+        _smtpClient.Authenticate("mailtrap", "mailtrap");
+
+        var message1 = CreateMessage("test1@example.com", "Test Email 1", "This is the first test email");
+        var message2 = CreateMessage("test2@example.com", "Test Email 2", "This is the second test email");
+        var message3 = CreateMessage("test3@example.com", "Test Email 3 with HTML", "<html><body><h1>HTML Test</h1></body></html>");
+
+        await _smtpClient.SendAsync(message1);
+        await _smtpClient.SendAsync(message2);
+        await _smtpClient.SendAsync(message3);
+    }
+
+    [OneTimeTearDown]
+    public async Task TearDown()
+    {
+        _smtpClient?.Disconnect(true);
+        _smtpClient?.Dispose();
+    }
+
+    private static MimeMessage CreateMessage(string recipient, string subject, string body)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", recipient));
+        message.Subject = subject;
+        message.Body = new TextPart("plain") { Text = body };
+        return message;
     }
 
     [Test]
