@@ -24,7 +24,8 @@ public class HtmlToTextConverter
                 }
             }
 
-            var text = doc.DocumentNode.InnerText;
+            var text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+            text = text.Replace("​", "");
             text = Regex.Replace(text, @"\s+", " ");
             return text.Trim();
         }

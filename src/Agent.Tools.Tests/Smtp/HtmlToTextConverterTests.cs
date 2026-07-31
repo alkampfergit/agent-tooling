@@ -63,4 +63,25 @@ public class HtmlToTextConverterTests
         var result = converter.ConvertHtmlToText(malformed);
         Assert.That(result, Does.Contain("Unclosed"));
     }
+
+    [Test]
+    public void ConvertHtmlToText_DecodesHtmlEntities()
+    {
+        var converter = new HtmlToTextConverter();
+        var html = "<p>MVP&nbsp;PGI&nbsp;Events &amp; More</p>";
+        var result = converter.ConvertHtmlToText(html);
+        Assert.That(result, Does.Not.Contain("&nbsp;"));
+        Assert.That(result, Does.Not.Contain("&amp;"));
+        Assert.That(result, Does.Contain("MVP PGI Events & More"));
+    }
+
+    [Test]
+    public void ConvertHtmlToText_RemovesZeroWidthSpaces()
+    {
+        var converter = new HtmlToTextConverter();
+        var html = "<p>​Redmond</p>";
+        var result = converter.ConvertHtmlToText(html);
+        Assert.That(result.Contains('​'), Is.False);
+        Assert.That(result, Is.EqualTo("Redmond"));
+    }
 }
