@@ -5,6 +5,7 @@ using global::Smtp.Configuration;
 using global::Smtp.Services;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Moq;
@@ -190,6 +191,38 @@ public class GraphEmailServiceUnitTests
             Assert.That(details.Cc, Is.EqualTo(new[] { "cc@example.com" }));
             Assert.That(details.Body, Is.EqualTo("Plain body"));
         }
+    }
+
+    [Test]
+    public async Task GetEmailDetailsAsync_WithNotFoundResponse_ReturnsNull()
+    {
+        var (service, adapter) = CreateServiceWithMockAdapter();
+
+        adapter.Setup(a => a.SendAsync<Message>(
+                It.IsAny<RequestInformation>(),
+                It.IsAny<ParsableFactory<Message>>(),
+                It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ODataError { ResponseStatusCode = 404 });
+
+        var details = await service.GetEmailDetailsAsync("missing");
+
+        Assert.That(details, Is.Null);
+    }
+
+    [Test]
+    public void GetEmailDetailsAsync_WithNonNotFoundODataError_Propagates()
+    {
+        var (service, adapter) = CreateServiceWithMockAdapter();
+
+        adapter.Setup(a => a.SendAsync<Message>(
+                It.IsAny<RequestInformation>(),
+                It.IsAny<ParsableFactory<Message>>(),
+                It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ODataError { ResponseStatusCode = 500 });
+
+        Assert.ThrowsAsync<ODataError>(() => service.GetEmailDetailsAsync("1"));
     }
 
     [Test]
