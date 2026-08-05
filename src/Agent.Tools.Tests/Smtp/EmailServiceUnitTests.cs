@@ -85,6 +85,34 @@ public class EmailServiceUnitTests
     }
 
     [Test]
+    public void Constructor_WithDefaultClientFactory_DoesNotThrow()
+    {
+        Assert.DoesNotThrow(() => new EmailService(CreateServer(), new HtmlToTextConverter()));
+    }
+
+    [Test]
+    public async Task MarkEmailAsReadAsync_WithValidId_ReturnsTrue()
+    {
+        var (service, inbox) = CreateServiceWithMockInbox();
+        var uid = new UniqueId(42);
+
+        inbox.Setup(f => f.GetMessage(uid, It.IsAny<CancellationToken>(), null)).Returns(new MimeKit.MimeMessage());
+        inbox.Setup(f => f.Store(uid, It.IsAny<IStoreFlagsRequest>(), It.IsAny<CancellationToken>())).Returns(true);
+
+        var result = await service.MarkEmailAsReadAsync("42");
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void MarkEmailAsReadAsync_WithInvalidFormat_ThrowsInvalidOperationException()
+    {
+        var (service, _) = CreateServiceWithMockInbox();
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.MarkEmailAsReadAsync("abc"));
+    }
+
+    [Test]
     public async Task MarkEmailsAsReadAsync_WithMixOfIds_OpensInboxOnceAndReturnsPerIdResults()
     {
         var (service, inbox) = CreateServiceWithMockInbox();

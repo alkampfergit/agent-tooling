@@ -39,6 +39,20 @@ public static class MarkReadCommand
 
     private static int Execute(string? id, string? serverName)
     {
+        return ExecuteCore(id, ids =>
+        {
+            var configProvider = new ConfigurationProvider();
+            var server = configProvider.GetServer(serverName);
+
+            var htmlConverter = new HtmlToTextConverter();
+            var emailService = new EmailService(server, htmlConverter);
+
+            return emailService.MarkEmailsAsReadAsync(ids);
+        });
+    }
+
+    internal static int ExecuteCore(string? id, Func<List<string>, Task<List<(string Id, bool Success)>>> markAsRead)
+    {
         try
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -55,13 +69,7 @@ public static class MarkReadCommand
                 return 2;
             }
 
-            var configProvider = new ConfigurationProvider();
-            var server = configProvider.GetServer(serverName);
-
-            var htmlConverter = new HtmlToTextConverter();
-            var emailService = new EmailService(server, htmlConverter);
-
-            var results = emailService.MarkEmailsAsReadAsync(ids).GetAwaiter().GetResult();
+            var results = markAsRead(ids).GetAwaiter().GetResult();
             var (summary, exitCode) = BuildSummary(results);
 
             // Compact JSON for single objects (no indentation for token efficiency)
