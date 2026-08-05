@@ -57,8 +57,7 @@ public static class SummaryCommand
             var configProvider = new ConfigurationProvider();
             var server = configProvider.GetServer(serverName);
 
-            var htmlConverter = new HtmlToTextConverter();
-            var emailService = EmailServiceFactory.Create(server, htmlConverter);
+            var emailService = EmailServiceFactory.Create(server);
 
             return emailService.GetUnreadEmailsAsync();
         });

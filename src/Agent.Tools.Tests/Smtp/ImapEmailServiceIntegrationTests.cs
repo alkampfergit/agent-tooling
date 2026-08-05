@@ -64,8 +64,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
         var emails = await service.GetUnreadEmailsAsync();
 
         Assert.That(emails, Is.Not.Null);
@@ -88,8 +87,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
         var emails = await service.GetUnreadEmailsAsync();
 
         if (emails.Count == 0) Assert.Ignore("No unread emails in test mailbox");
@@ -113,8 +111,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
         var details = await service.GetEmailDetailsAsync("999999");
 
         Assert.That(details, Is.Null);
@@ -125,8 +122,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
 
         var unreadBefore = await service.GetUnreadEmailsAsync();
         if (unreadBefore.Count == 0) Assert.Ignore("No unread emails to mark as read");
@@ -145,8 +141,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
         var result = await service.MarkEmailAsReadAsync("999999");
 
         Assert.That(result, Is.False);
@@ -157,8 +152,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
 
         var unreadBefore = await service.GetUnreadEmailsAsync();
         if (unreadBefore.Count < 2) Assert.Ignore("Not enough unread emails to mark as read");
@@ -178,8 +172,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
 
         var unreadBefore = await service.GetUnreadEmailsAsync();
         if (unreadBefore.Count == 0) Assert.Ignore("No unread emails to mark as read");
@@ -202,8 +195,7 @@ public class ImapEmailServiceIntegrationTests
     {
         if (_testServer == null) Assert.Ignore("No test server");
 
-        var converter = new HtmlToTextConverter();
-        var service = new ImapEmailService(_testServer, converter);
+        var service = new ImapEmailService(_testServer!);
 
         var results = await service.MarkEmailsAsReadAsync(NonNumericIds);
 

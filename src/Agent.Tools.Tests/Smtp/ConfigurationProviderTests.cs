@@ -37,7 +37,7 @@ public class ConfigurationProviderTests
             var smtpConfig = provider.GetSmtpConfiguration();
 
             Assert.That(smtpConfig.Servers, Is.Not.Null);
-            Assert.That(smtpConfig.Servers.Count, Is.EqualTo(1));
+            Assert.That(smtpConfig.Servers, Has.Count.EqualTo(1));
             Assert.That(smtpConfig.Servers[0].Name, Is.EqualTo("test"));
 
             Directory.SetCurrentDirectory(originalDir);
@@ -78,8 +78,11 @@ public class ConfigurationProviderTests
             var server = provider.GetServer(null);
 
             Assert.That(server, Is.Not.Null);
-            Assert.That(server.Name, Is.EqualTo("test"));
-            Assert.That(server.Address, Is.EqualTo("imap.test.com"));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(server.Name, Is.EqualTo("test"));
+                Assert.That(server.Address, Is.EqualTo("imap.test.com"));
+            }
 
             Directory.SetCurrentDirectory(originalDir);
         }
@@ -159,8 +162,11 @@ public class ConfigurationProviderTests
             var server = provider.GetServer("secondary");
 
             Assert.That(server, Is.Not.Null);
-            Assert.That(server.Name, Is.EqualTo("secondary"));
-            Assert.That(server.Address, Is.EqualTo("imap2.test.com"));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(server.Name, Is.EqualTo("secondary"));
+                Assert.That(server.Address, Is.EqualTo("imap2.test.com"));
+            }
 
             Directory.SetCurrentDirectory(originalDir);
         }
@@ -302,7 +308,7 @@ public class ConfigurationProviderTests
             var originalDir = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory(tempDir);
 
-            var config = new { Smtp = new { Servers = new object[0] } };
+            var config = new { Smtp = new { Servers = Array.Empty<object>() } };
             var json = JsonSerializer.Serialize(config);
             File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
 

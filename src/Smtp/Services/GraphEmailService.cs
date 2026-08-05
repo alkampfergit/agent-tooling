@@ -15,18 +15,16 @@ public class GraphEmailService : IEmailService
     private static readonly string[] DetailsSelect = { "id", "from", "toRecipients", "ccRecipients", "subject", "receivedDateTime", "body" };
 
     private readonly ServerConfig _server;
-    private readonly HtmlToTextConverter _htmlConverter;
     private readonly Func<ServerConfig, GraphServiceClient> _clientFactory;
 
-    public GraphEmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
-        : this(server, htmlConverter, GraphClientFactory.CreateClient)
+    public GraphEmailService(ServerConfig server)
+        : this(server, GraphClientFactory.CreateClient)
     {
     }
 
-    internal GraphEmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, GraphServiceClient> clientFactory)
+    internal GraphEmailService(ServerConfig server, Func<ServerConfig, GraphServiceClient> clientFactory)
     {
         _server = server;
-        _htmlConverter = htmlConverter;
         _clientFactory = clientFactory;
     }
 
@@ -87,7 +85,7 @@ public class GraphEmailService : IEmailService
             var body = message.Body?.Content ?? "";
             if (message.Body?.ContentType == BodyType.Html)
             {
-                body = _htmlConverter.ConvertHtmlToText(body);
+                body = HtmlToTextConverter.ConvertHtmlToText(body);
             }
 
             return new EmailDetails

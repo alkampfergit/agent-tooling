@@ -7,12 +7,16 @@ using global::Smtp.Commands;
 [Category("Unit")]
 public class MarkReadCommandTests
 {
+    private static readonly string[] SingleId = { "42" };
+    private static readonly string[] ThreeIds = { "1", "2", "3" };
+    private static readonly string[] FailedIds = { "2", "3" };
+
     [Test]
     public void ParseIds_WithSingleId_ReturnsOneId()
     {
         var ids = MarkReadCommand.ParseIds("42");
 
-        Assert.That(ids, Is.EqualTo(new[] { "42" }));
+        Assert.That(ids, Is.EqualTo(SingleId));
     }
 
     [Test]
@@ -20,7 +24,7 @@ public class MarkReadCommandTests
     {
         var ids = MarkReadCommand.ParseIds(" 1, 2 ,,3 ");
 
-        Assert.That(ids, Is.EqualTo(new[] { "1", "2", "3" }));
+        Assert.That(ids, Is.EqualTo(ThreeIds));
     }
 
     [Test]
@@ -34,13 +38,13 @@ public class MarkReadCommandTests
 
         var (summary, exitCode) = MarkReadCommand.BuildSummary(results);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(summary.Total, Is.EqualTo(2));
             Assert.That(summary.Succeeded, Is.EqualTo(2));
             Assert.That(summary.Failed, Is.Empty);
-            Assert.That(exitCode, Is.EqualTo(0));
-        });
+            Assert.That(exitCode, Is.Zero);
+        }
     }
 
     [Test]
@@ -55,13 +59,13 @@ public class MarkReadCommandTests
 
         var (summary, exitCode) = MarkReadCommand.BuildSummary(results);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(summary.Total, Is.EqualTo(3));
             Assert.That(summary.Succeeded, Is.EqualTo(1));
-            Assert.That(summary.Failed, Is.EqualTo(new[] { "2", "3" }));
+            Assert.That(summary.Failed, Is.EqualTo(FailedIds));
             Assert.That(exitCode, Is.EqualTo(2));
-        });
+        }
     }
 
     [Test]
@@ -75,11 +79,11 @@ public class MarkReadCommandTests
             return Task.FromResult(new List<(string Id, bool Success)>());
         });
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(exitCode, Is.EqualTo(2));
             Assert.That(called, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -88,7 +92,7 @@ public class MarkReadCommandTests
         var exitCode = MarkReadCommand.ExecuteCore("1,2", ids =>
             Task.FromResult(ids.Select(i => (i, true)).ToList()));
 
-        Assert.That(exitCode, Is.EqualTo(0));
+        Assert.That(exitCode, Is.Zero);
     }
 
     [Test]
@@ -111,11 +115,11 @@ public class MarkReadCommandTests
             return Task.FromResult(new List<(string Id, bool Success)>());
         });
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(exitCode, Is.EqualTo(2));
             Assert.That(called, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -141,11 +145,11 @@ public class MarkReadCommandTests
     {
         var command = MarkReadCommand.Create();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(command.Name, Is.EqualTo("mark-read"));
             Assert.That(command.Options.Select(o => o.Name), Does.Contain("--id"));
             Assert.That(command.Options.Select(o => o.Name), Does.Contain("--servername"));
-        });
+        }
     }
 }

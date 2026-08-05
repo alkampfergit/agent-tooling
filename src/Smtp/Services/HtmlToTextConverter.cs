@@ -3,9 +3,9 @@ namespace Smtp.Services;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 
-public class HtmlToTextConverter
+public static partial class HtmlToTextConverter
 {
-    public string ConvertHtmlToText(string html)
+    public static string ConvertHtmlToText(string html)
     {
         if (string.IsNullOrWhiteSpace(html))
             return "";
@@ -25,13 +25,19 @@ public class HtmlToTextConverter
             }
 
             var text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
-            text = text.Replace("​", "");
-            text = Regex.Replace(text, @"\s+", " ");
+            text = text.Replace("\u200B", "");
+            text = WhitespaceRegex().Replace(text, " ");
             return text.Trim();
         }
         catch
         {
-            return Regex.Replace(html, "<[^>]+>", "").Trim();
+            return HtmlTagRegex().Replace(html, "").Trim();
         }
     }
+
+    [GeneratedRegex(@"\s+", RegexOptions.None, 1000)]
+    private static partial Regex WhitespaceRegex();
+
+    [GeneratedRegex("<[^>]+>", RegexOptions.None, 1000)]
+    private static partial Regex HtmlTagRegex();
 }

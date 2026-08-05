@@ -4,7 +4,7 @@ using MailKit.Net.Imap;
 using MailKit.Security;
 using Smtp.Configuration;
 
-public class ImapClientFactory
+public static class ImapClientFactory
 {
     public static IImapClient CreateClient(ServerConfig server)
     {

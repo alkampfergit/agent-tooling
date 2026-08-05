@@ -12,18 +12,16 @@ using MailKit.Security;
 public class ImapEmailService : IEmailService
 {
     private readonly ServerConfig _server;
-    private readonly HtmlToTextConverter _htmlConverter;
     private readonly Func<ServerConfig, IImapClient> _clientFactory;
 
-    public ImapEmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
-        : this(server, htmlConverter, ImapClientFactory.CreateClient)
+    public ImapEmailService(ServerConfig server)
+        : this(server, ImapClientFactory.CreateClient)
     {
     }
 
-    internal ImapEmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, IImapClient> clientFactory)
+    internal ImapEmailService(ServerConfig server, Func<ServerConfig, IImapClient> clientFactory)
     {
         _server = server;
-        _htmlConverter = htmlConverter;
         _clientFactory = clientFactory;
     }
 
@@ -78,7 +76,7 @@ public class ImapEmailService : IEmailService
         var body = ExtractBody(message);
         if (!string.IsNullOrEmpty(body) && IsHtmlContent(message))
         {
-            body = _htmlConverter.ConvertHtmlToText(body);
+            body = HtmlToTextConverter.ConvertHtmlToText(body);
         }
 
         return new EmailDetails
@@ -140,7 +138,7 @@ public class ImapEmailService : IEmailService
         return true;
     }
 
-    private string ExtractPreview(MimeMessage message)
+    private static string ExtractPreview(MimeMessage message)
     {
         var body = ExtractBody(message);
         if (string.IsNullOrWhiteSpace(body))
@@ -148,7 +146,7 @@ public class ImapEmailService : IEmailService
 
         if (IsHtmlContent(message))
         {
-            body = _htmlConverter.ConvertHtmlToText(body);
+            body = HtmlToTextConverter.ConvertHtmlToText(body);
         }
 
         return body.Length > 200 ? body.Substring(0, 200).Trim() + "..." : body.Trim();

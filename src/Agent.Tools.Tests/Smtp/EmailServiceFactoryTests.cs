@@ -8,8 +8,6 @@ using global::Smtp.Services;
 [Category("Unit")]
 public class EmailServiceFactoryTests
 {
-    private static readonly HtmlToTextConverter Converter = new();
-
     [Test]
     public void Create_ImapType_ReturnsImapEmailService()
     {
@@ -24,7 +22,7 @@ public class EmailServiceFactoryTests
             UseHttps = true
         };
 
-        var service = EmailServiceFactory.Create(server, Converter);
+        var service = EmailServiceFactory.Create(server);
 
         Assert.That(service, Is.TypeOf<ImapEmailService>());
     }
@@ -40,7 +38,7 @@ public class EmailServiceFactoryTests
             ClientId = "client-id"
         };
 
-        var service = EmailServiceFactory.Create(server, Converter);
+        var service = EmailServiceFactory.Create(server);
 
         Assert.That(service, Is.TypeOf<GraphEmailService>());
     }
@@ -56,7 +54,7 @@ public class EmailServiceFactoryTests
             ClientId = "client-id"
         };
 
-        var service = EmailServiceFactory.Create(server, Converter);
+        var service = EmailServiceFactory.Create(server);
 
         Assert.That(service, Is.TypeOf<GraphEmailService>());
     }
@@ -66,7 +64,7 @@ public class EmailServiceFactoryTests
     {
         var server = new ServerConfig { Name = "weird", Type = "Pop3" };
 
-        var ex = Assert.Throws<InvalidOperationException>(() => EmailServiceFactory.Create(server, Converter));
+        var ex = Assert.Throws<InvalidOperationException>(() => EmailServiceFactory.Create(server));
         Assert.That(ex!.Message, Does.Contain("Pop3"));
     }
 }

@@ -10,8 +10,11 @@ public class HelloToolTests
     {
         var result = CliRunner.Run("HelloTool.dll");
 
-        Assert.That(result.ExitCode, Is.EqualTo(0));
-        Assert.That(result.StdOut, Does.Contain("Hello from Agent Tools!"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.ExitCode, Is.Zero);
+            Assert.That(result.StdOut, Does.Contain("Hello from Agent Tools!"));
+        }
     }
 
     [Test]
@@ -19,8 +22,11 @@ public class HelloToolTests
     {
         var result = CliRunner.Run("HelloTool.dll", "greet", "World");
 
-        Assert.That(result.ExitCode, Is.EqualTo(0));
-        Assert.That(result.StdOut.Trim(), Is.EqualTo("Hello, World!"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.ExitCode, Is.Zero);
+            Assert.That(result.StdOut.Trim(), Is.EqualTo("Hello, World!"));
+        }
     }
 
     [Test]
@@ -28,8 +34,11 @@ public class HelloToolTests
     {
         var result = CliRunner.Run("HelloTool.dll", "greet", "World", "--shout");
 
-        Assert.That(result.ExitCode, Is.EqualTo(0));
-        Assert.That(result.StdOut.Trim(), Is.EqualTo("HELLO, WORLD!"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.ExitCode, Is.Zero);
+            Assert.That(result.StdOut.Trim(), Is.EqualTo("HELLO, WORLD!"));
+        }
     }
 
     [Test]
@@ -37,7 +46,7 @@ public class HelloToolTests
     {
         var result = CliRunner.Run("HelloTool.dll", "greet");
 
-        Assert.That(result.ExitCode, Is.Not.EqualTo(0));
+        Assert.That(result.ExitCode, Is.Not.Zero);
     }
 
     [Test]
@@ -45,7 +54,10 @@ public class HelloToolTests
     {
         var result = CliRunner.Run("HelloTool.dll", "greet", "John Doe");
 
-        Assert.That(result.ExitCode, Is.EqualTo(0));
-        Assert.That(result.StdOut.Trim(), Is.EqualTo("Hello, John Doe!"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.ExitCode, Is.Zero);
+            Assert.That(result.StdOut.Trim(), Is.EqualTo("Hello, John Doe!"));
+        }
     }
 }
