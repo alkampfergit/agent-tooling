@@ -164,7 +164,7 @@ public class EmailServiceIntegrationTests
         Assert.That(results.All(r => r.Success), Is.True);
 
         var unreadAfter = await service.GetUnreadEmailsAsync();
-        Assert.That(unreadAfter.Count, Is.EqualTo(unreadBefore.Count - 2));
+        Assert.That(unreadAfter, Has.Count.EqualTo(unreadBefore.Count - 2));
     }
 
     [Test]
@@ -176,15 +176,20 @@ public class EmailServiceIntegrationTests
         var service = new EmailService(_testServer, converter);
 
         var unreadBefore = await service.GetUnreadEmailsAsync();
-        if (!unreadBefore.Any()) Assert.Ignore("No unread emails to mark as read");
+        if (unreadBefore.Count == 0) Assert.Ignore("No unread emails to mark as read");
 
         var validId = unreadBefore[0].Id;
         var results = await service.MarkEmailsAsReadAsync(new[] { validId, "999999" });
 
         Assert.That(results, Has.Count.EqualTo(2));
-        Assert.That(results.Single(r => r.Id == validId).Success, Is.True);
-        Assert.That(results.Single(r => r.Id == "999999").Success, Is.False);
+        Assert.Multiple(() =>
+        {
+            Assert.That(results.Single(r => r.Id == validId).Success, Is.True);
+            Assert.That(results.Single(r => r.Id == "999999").Success, Is.False);
+        });
     }
+
+    private static readonly string[] NonNumericIds = { "abc" };
 
     [Test]
     public async Task MarkEmailsAsReadAsync_WithNonNumericId_ReturnsFalseNotException()
@@ -194,7 +199,7 @@ public class EmailServiceIntegrationTests
         var converter = new HtmlToTextConverter();
         var service = new EmailService(_testServer, converter);
 
-        var results = await service.MarkEmailsAsReadAsync(new[] { "abc" });
+        var results = await service.MarkEmailsAsReadAsync(NonNumericIds);
 
         Assert.That(results, Has.Count.EqualTo(1));
         Assert.That(results[0].Success, Is.False);

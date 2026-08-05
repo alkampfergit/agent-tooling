@@ -13,11 +13,18 @@ public class EmailService
 {
     private readonly ServerConfig _server;
     private readonly HtmlToTextConverter _htmlConverter;
+    private readonly Func<ServerConfig, IImapClient> _clientFactory;
 
     public EmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
+        : this(server, htmlConverter, ImapClientFactory.CreateClient)
+    {
+    }
+
+    internal EmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, IImapClient> clientFactory)
     {
         _server = server;
         _htmlConverter = htmlConverter;
+        _clientFactory = clientFactory;
     }
 
     public async Task<List<EmailSummary>> GetUnreadEmailsAsync()
@@ -97,7 +104,7 @@ public class EmailService
 
     public async Task<List<(string Id, bool Success)>> MarkEmailsAsReadAsync(IEnumerable<string> emailIds)
     {
-        using var client = ImapClientFactory.CreateClient(_server);
+        using var client = _clientFactory(_server);
         var inbox = client.Inbox;
         inbox.Open(FolderAccess.ReadWrite);
 
@@ -110,7 +117,7 @@ public class EmailService
         return results;
     }
 
-    private bool MarkSingleAsRead(IMailFolder inbox, string emailId)
+    private static bool MarkSingleAsRead(IMailFolder inbox, string emailId)
     {
         if (!uint.TryParse(emailId, out var uidValue))
             return false;

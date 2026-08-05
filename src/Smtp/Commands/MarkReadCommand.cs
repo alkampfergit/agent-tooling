@@ -47,10 +47,7 @@ public static class MarkReadCommand
                 return 2;
             }
 
-            var ids = id.Split(',')
-                .Select(x => x.Trim())
-                .Where(x => x.Length > 0)
-                .ToList();
+            var ids = ParseIds(id);
 
             if (ids.Count == 0)
             {
@@ -65,20 +62,13 @@ public static class MarkReadCommand
             var emailService = new EmailService(server, htmlConverter);
 
             var results = emailService.MarkEmailsAsReadAsync(ids).GetAwaiter().GetResult();
-            var failed = results.Where(r => !r.Success).Select(r => r.Id).ToList();
-
-            var summary = new MarkReadSummary
-            {
-                Total = results.Count,
-                Succeeded = results.Count(r => r.Success),
-                Failed = failed
-            };
+            var (summary, exitCode) = BuildSummary(results);
 
             // Compact JSON for single objects (no indentation for token efficiency)
             var json = JsonSerializer.Serialize(summary);
             Console.WriteLine(json);
 
-            return failed.Count == 0 ? 0 : 2;
+            return exitCode;
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("configured") || ex.Message.Contains("Multiple"))
         {
@@ -90,5 +80,27 @@ public static class MarkReadCommand
             Console.Error.WriteLine($"Error: {ex.Message}");
             return 2;
         }
+    }
+
+    internal static List<string> ParseIds(string id)
+    {
+        return id.Split(',')
+            .Select(x => x.Trim())
+            .Where(x => x.Length > 0)
+            .ToList();
+    }
+
+    internal static (MarkReadSummary Summary, int ExitCode) BuildSummary(List<(string Id, bool Success)> results)
+    {
+        var failed = results.Where(r => !r.Success).Select(r => r.Id).ToList();
+
+        var summary = new MarkReadSummary
+        {
+            Total = results.Count,
+            Succeeded = results.Count(r => r.Success),
+            Failed = failed
+        };
+
+        return (summary, failed.Count == 0 ? 0 : 2);
     }
 }
