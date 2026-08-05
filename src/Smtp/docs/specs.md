@@ -18,19 +18,61 @@ Both files must contain a `Smtp` root key with server configuration:
     "Servers": [
       {
         "Name": "primary",
+        "Type": "Imap",
         "Address": "imap.example.com",
         "Port": 993,
         "Username": "user@example.com",
         "Password": "secret",
         "UseHttps": true
+      },
+      {
+        "Name": "o365",
+        "Type": "Office365",
+        "Username": "user@contoso.com",
+        "ClientId": "<entra-app-client-id>",
+        "TenantId": "common"
       }
     ]
   }
 }
 ```
 
+Each server entry has a `Type` field: `"Imap"` (default when omitted, preserving existing configs) or `"Office365"`. Field requirements are validated per type at runtime (not via compile-time `required`):
+- `Imap`: `Address`, `Port`, `Username`, `Password`, `UseHttps` are required.
+- `Office365`: `Username` (the mailbox UPN/email to sign in as), `ClientId` (Entra app registration's Application ID) are required. `TenantId` is optional, defaults to `"common"`. `Address`, `Port`, `Password`, `UseHttps` are not used and must not be set.
+
 If only one server is configured, `--servername` is optional and defaults to that server.
 If multiple servers are configured and `--servername` is omitted, the command fails with an error.
+
+## Office 365 / Microsoft Graph Support
+
+For servers with `Type: "Office365"`, `summary`, `get-details`, and `mark-read` operate against the user's mailbox via the Microsoft Graph API (`Microsoft.Graph` SDK) instead of IMAP. No new commands are added — the existing three commands transparently support both server types.
+
+### Authentication
+
+- Uses the OAuth2 device-code flow for a **public client** Entra app registration (`ClientId` + `TenantId`, no client secret — public clients cannot hold one).
+- Requests the delegated `Mail.ReadWrite` scope (covers read and mark-read operations).
+- On first use (no cached token), the tool prints a verification URL and one-time code to stderr/console and blocks until the user completes sign-in in a browser (on any device). It never launches a browser itself.
+- The resulting token (including refresh token) is persisted via `Microsoft.Identity.Client` (MSAL.NET) + `Microsoft.Identity.Client.Extensions.Msal`, using OS-native secure storage:
+  - **Windows:** DPAPI-encrypted file, scoped to the current Windows user.
+  - **macOS:** Keychain.
+  - **Linux:** libsecret ("Secret Service" — gnome-keyring or kwallet).
+- On Linux, if no Secret Service is available, the tool does **not** fall back to a plaintext cache. It fails with a clear configuration error instructing the user to install/start gnome-keyring or kwallet, and requires a fresh device-code login on every invocation until then.
+- Subsequent invocations silently redeem a cached/refreshed access token — no prompt unless the refresh token has expired or been revoked.
+- Alongside the encrypted MSAL token cache, an `AuthenticationRecord` is serialized to `%LOCALAPPDATA%/AgentTooling/Smtp/{server-name}.authrecord.json` (or the platform equivalent) after the first sign-in. This is required by `DeviceCodeCredential` to identify which cached account to use for silent token acquisition on later runs — without it, the credential cannot locate the right account in the persistent cache and re-prompts every invocation.
+
+### Data mapping
+
+- Graph message IDs (opaque strings) are used directly as the `id` field in `EmailSummary`/`EmailDetails`/`MarkReadSummary` — no format changes to existing models.
+- `summary` maps from `GET /me/mailFolders/inbox/messages?$filter=isRead eq false&$select=id,from,subject,receivedDateTime,bodyPreview&$orderby=receivedDateTime desc`, truncating `bodyPreview` to 200 characters for the `preview` field (consistent with the IMAP path).
+- `get-details` maps from `GET /me/messages/{id}` (`from`, `toRecipients`, `ccRecipients`, `subject`, `receivedDateTime`, `body`). HTML bodies are still routed through the existing `HtmlToTextConverter` for parity with the IMAP path's "strip all HTML" behavior.
+- `mark-read` issues `PATCH /me/messages/{id}` with `{"isRead": true}` per ID, same best-effort-per-ID behavior as the IMAP path.
+
+### Design Constraints (Office 365)
+
+- No attachment handling, consistent with the IMAP path.
+- No new CLI commands or options — `Type` in configuration is the only new surface area.
+- No client secret in configuration — device-code flow only supports public client apps.
 
 ## Commands
 
@@ -145,6 +187,9 @@ smtp mark-read --id <id[,id...]> [--servername <name>]
 - **Authentication failure:** Error message includes server name and username attempted.
 - **Connection error:** Error message includes server address and port.
 - **Email ID not found:** Error message indicates invalid ID.
+- **Missing Office 365 config fields:** Error message names the missing field (`ClientId` or `Username`) and the server name.
+- **No Secret Service on Linux:** Error message instructs the user to install/start gnome-keyring or kwallet; does not fall back to plaintext storage.
+- **Device-code sign-in required:** Verification URL and code are printed to stderr; the command blocks until sign-in completes or the code expires (per Entra's device-code expiry, typically 15 minutes).
 
 ## Design Constraints
 

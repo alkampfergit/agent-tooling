@@ -49,7 +49,7 @@ public static class GetDetailsCommand
             var server = configProvider.GetServer(serverName);
 
             var htmlConverter = new HtmlToTextConverter();
-            var emailService = new EmailService(server, htmlConverter);
+            var emailService = EmailServiceFactory.Create(server, htmlConverter);
 
             var details = emailService.GetEmailDetailsAsync(id).GetAwaiter().GetResult();
             if (details == null)
@@ -71,7 +71,7 @@ public static class GetDetailsCommand
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ExceptionFormatting.Chain(ex)}");
             return 2;
         }
     }

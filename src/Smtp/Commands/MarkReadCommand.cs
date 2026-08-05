@@ -45,7 +45,7 @@ public static class MarkReadCommand
             var server = configProvider.GetServer(serverName);
 
             var htmlConverter = new HtmlToTextConverter();
-            var emailService = new EmailService(server, htmlConverter);
+            var emailService = EmailServiceFactory.Create(server, htmlConverter);
 
             return emailService.MarkEmailsAsReadAsync(ids);
         });
@@ -85,7 +85,7 @@ public static class MarkReadCommand
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ExceptionFormatting.Chain(ex)}");
             return 2;
         }
     }

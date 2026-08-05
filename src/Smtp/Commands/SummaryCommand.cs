@@ -57,7 +57,7 @@ public static class SummaryCommand
             var server = configProvider.GetServer(serverName);
 
             var htmlConverter = new HtmlToTextConverter();
-            var emailService = new EmailService(server, htmlConverter);
+            var emailService = EmailServiceFactory.Create(server, htmlConverter);
 
             var summaries = emailService.GetUnreadEmailsAsync().GetAwaiter().GetResult();
 
@@ -86,7 +86,7 @@ public static class SummaryCommand
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ExceptionFormatting.Chain(ex)}");
             return 2;
         }
     }

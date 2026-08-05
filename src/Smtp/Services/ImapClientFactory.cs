@@ -11,9 +11,9 @@ public class ImapClientFactory
         var client = new ImapClient();
         try
         {
-            var options = server.UseHttps ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.None;
-            client.Connect(server.Address, server.Port, options);
-            client.Authenticate(server.Username, server.Password);
+            var options = server.UseHttps == true ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.None;
+            client.Connect(server.Address!, server.Port!.Value, options);
+            client.Authenticate(server.Username!, server.Password!);
             return client;
         }
         catch (Exception ex)

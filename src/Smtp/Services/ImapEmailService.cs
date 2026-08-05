@@ -9,18 +9,18 @@ using Smtp.Models;
 using static MailKit.UniqueId;
 using MailKit.Security;
 
-public class EmailService
+public class ImapEmailService : IEmailService
 {
     private readonly ServerConfig _server;
     private readonly HtmlToTextConverter _htmlConverter;
     private readonly Func<ServerConfig, IImapClient> _clientFactory;
 
-    public EmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
+    public ImapEmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
         : this(server, htmlConverter, ImapClientFactory.CreateClient)
     {
     }
 
-    internal EmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, IImapClient> clientFactory)
+    internal ImapEmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, IImapClient> clientFactory)
     {
         _server = server;
         _htmlConverter = htmlConverter;

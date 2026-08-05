@@ -9,7 +9,7 @@ using Moq;
 [TestFixture]
 [Category("smtp")]
 [Category("Unit")]
-public class EmailServiceUnitTests
+public class ImapEmailServiceUnitTests
 {
     private static ServerConfig CreateServer()
     {
@@ -24,7 +24,7 @@ public class EmailServiceUnitTests
         };
     }
 
-    private static (EmailService Service, Mock<IMailFolder> Inbox) CreateServiceWithMockInbox()
+    private static (ImapEmailService Service, Mock<IMailFolder> Inbox) CreateServiceWithMockInbox()
     {
         var inbox = new Mock<IMailFolder>();
         inbox.Setup(f => f.Open(FolderAccess.ReadWrite, It.IsAny<CancellationToken>()));
@@ -32,7 +32,7 @@ public class EmailServiceUnitTests
         var client = new Mock<IImapClient>();
         client.SetupGet(c => c.Inbox).Returns(inbox.Object);
 
-        var service = new EmailService(CreateServer(), new HtmlToTextConverter(), _ => client.Object);
+        var service = new ImapEmailService(CreateServer(), new HtmlToTextConverter(), _ => client.Object);
         return (service, inbox);
     }
 
@@ -87,7 +87,7 @@ public class EmailServiceUnitTests
     [Test]
     public void Constructor_WithDefaultClientFactory_DoesNotThrow()
     {
-        Assert.DoesNotThrow(() => new EmailService(CreateServer(), new HtmlToTextConverter()));
+        Assert.DoesNotThrow(() => new ImapEmailService(CreateServer(), new HtmlToTextConverter()));
     }
 
     [Test]
