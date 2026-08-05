@@ -32,7 +32,7 @@ public class GraphEmailServiceUnitTests
 
     private static GraphEmailService CreateServiceWithFailingClientFactory(Exception exception)
     {
-        return new GraphEmailService(CreateServer(), new HtmlToTextConverter(), _ => throw exception);
+        return new GraphEmailService(CreateServer(), _ => throw exception);
     }
 
     private static (GraphEmailService Service, Mock<IRequestAdapter> Adapter) CreateServiceWithMockAdapter()
@@ -40,7 +40,7 @@ public class GraphEmailServiceUnitTests
         var adapter = new Mock<IRequestAdapter>();
         adapter.SetupGet(a => a.BaseUrl).Returns("https://graph.microsoft.com/v1.0");
         var client = new GraphServiceClient(adapter.Object);
-        var service = new GraphEmailService(CreateServer(), new HtmlToTextConverter(), _ => client);
+        var service = new GraphEmailService(CreateServer(), _ => client);
         return (service, adapter);
     }
 
@@ -50,7 +50,7 @@ public class GraphEmailServiceUnitTests
         var adapter = new Mock<IRequestAdapter>();
         var client = new GraphServiceClient(adapter.Object);
 
-        Assert.DoesNotThrow(() => new GraphEmailService(CreateServer(), new HtmlToTextConverter(), _ => client));
+        Assert.DoesNotThrow(() => new GraphEmailService(CreateServer(), _ => client));
     }
 
     [Test]

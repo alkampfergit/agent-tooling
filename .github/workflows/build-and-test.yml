@@ -96,7 +96,7 @@ jobs:
 
     - name: Generate coverage report
       if: always()
-      uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+      uses: danielpalme/ReportGenerator-GitHub-Action@4d510cbed8a05af5aefea46c7fd6e05b95844c89 # 5.2.0
       with:
         reports: 'coverage/**/coverage.cobertura.xml'
         targetdir: 'coverage-report'
@@ -112,7 +112,7 @@ jobs:
 
     - name: Publish test results
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action@v2
+      uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2
       with:
         files: 'coverage/test-results-*.trx'
         check_name: 'Test Results'

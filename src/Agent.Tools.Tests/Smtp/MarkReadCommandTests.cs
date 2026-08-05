@@ -1,5 +1,6 @@
 namespace Agent.Tools.Tests.Smtp;
 
+using System.Text.Json;
 using global::Smtp.Commands;
 
 [TestFixture]
@@ -7,12 +8,17 @@ using global::Smtp.Commands;
 [Category("Unit")]
 public class MarkReadCommandTests
 {
+    private static readonly string[] SingleId = { "42" };
+    private static readonly string[] ThreeIds = { "1", "2", "3" };
+    private static readonly string[] FailedIds = { "2", "3" };
+    private static readonly string[] IdArgOne = { "--id", "1" };
+
     [Test]
     public void ParseIds_WithSingleId_ReturnsOneId()
     {
         var ids = MarkReadCommand.ParseIds("42");
 
-        Assert.That(ids, Is.EqualTo(new[] { "42" }));
+        Assert.That(ids, Is.EqualTo(SingleId));
     }
 
     [Test]
@@ -20,7 +26,7 @@ public class MarkReadCommandTests
     {
         var ids = MarkReadCommand.ParseIds(" 1, 2 ,,3 ");
 
-        Assert.That(ids, Is.EqualTo(new[] { "1", "2", "3" }));
+        Assert.That(ids, Is.EqualTo(ThreeIds));
     }
 
     [Test]
@@ -34,13 +40,13 @@ public class MarkReadCommandTests
 
         var (summary, exitCode) = MarkReadCommand.BuildSummary(results);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(summary.Total, Is.EqualTo(2));
             Assert.That(summary.Succeeded, Is.EqualTo(2));
             Assert.That(summary.Failed, Is.Empty);
-            Assert.That(exitCode, Is.EqualTo(0));
-        });
+            Assert.That(exitCode, Is.Zero);
+        }
     }
 
     [Test]
@@ -55,13 +61,13 @@ public class MarkReadCommandTests
 
         var (summary, exitCode) = MarkReadCommand.BuildSummary(results);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(summary.Total, Is.EqualTo(3));
             Assert.That(summary.Succeeded, Is.EqualTo(1));
-            Assert.That(summary.Failed, Is.EqualTo(new[] { "2", "3" }));
+            Assert.That(summary.Failed, Is.EqualTo(FailedIds));
             Assert.That(exitCode, Is.EqualTo(2));
-        });
+        }
     }
 
     [Test]
@@ -75,11 +81,11 @@ public class MarkReadCommandTests
             return Task.FromResult(new List<(string Id, bool Success)>());
         });
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(exitCode, Is.EqualTo(2));
             Assert.That(called, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -88,7 +94,7 @@ public class MarkReadCommandTests
         var exitCode = MarkReadCommand.ExecuteCore("1,2", ids =>
             Task.FromResult(ids.Select(i => (i, true)).ToList()));
 
-        Assert.That(exitCode, Is.EqualTo(0));
+        Assert.That(exitCode, Is.Zero);
     }
 
     [Test]
@@ -111,11 +117,11 @@ public class MarkReadCommandTests
             return Task.FromResult(new List<(string Id, bool Success)>());
         });
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(exitCode, Is.EqualTo(2));
             Assert.That(called, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -137,15 +143,49 @@ public class MarkReadCommandTests
     }
 
     [Test]
+    public void Create_WithUnreachableServer_InvokeReturnsExitCodeTwo()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        var originalDir = Directory.GetCurrentDirectory();
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "unreachable", Address = "127.0.0.1", Port = 1, Username = "u", Password = "p", UseHttps = false }
+                    }
+                }
+            };
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), JsonSerializer.Serialize(config));
+
+            var command = MarkReadCommand.Create();
+            var exitCode = command.Parse(IdArgOne).Invoke();
+
+            Assert.That(exitCode, Is.EqualTo(2));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDir);
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
     public void Create_ReturnsCommandWithIdAndServerNameOptions()
     {
         var command = MarkReadCommand.Create();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(command.Name, Is.EqualTo("mark-read"));
             Assert.That(command.Options.Select(o => o.Name), Does.Contain("--id"));
             Assert.That(command.Options.Select(o => o.Name), Does.Contain("--servername"));
-        });
+        }
     }
 }

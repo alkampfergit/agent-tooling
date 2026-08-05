@@ -8,4 +8,4 @@ RootCommand rootCommand = new("Email CLI tool for reading and managing emails vi
     MarkReadCommand.Create()
 };
 
-return rootCommand.Parse(args).Invoke();
+return await rootCommand.Parse(args).InvokeAsync();

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Agent.Tools.Common;
 
-public class ConfigurationManager
+public static class ConfigurationManager
 {
     public static IConfiguration LoadToolConfiguration(string toolName)
     {

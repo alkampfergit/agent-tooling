@@ -97,6 +97,40 @@ public class SummaryCommandTests
     }
 
     [Test]
+    public void Create_WithUnreachableServer_InvokeReturnsExitCodeTwo()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        var originalDir = Directory.GetCurrentDirectory();
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "unreachable", Address = "127.0.0.1", Port = 1, Username = "u", Password = "p", UseHttps = false }
+                    }
+                }
+            };
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), JsonSerializer.Serialize(config));
+
+            var command = SummaryCommand.Create();
+            var exitCode = command.Parse(Array.Empty<string>()).Invoke();
+
+            Assert.That(exitCode, Is.EqualTo(2));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDir);
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
     public void Create_ReturnsCommandWithServerNameAndLimitOptions()
     {
         var command = SummaryCommand.Create();

@@ -35,4 +35,4 @@ rootCommand.SetAction(parseResult =>
     return 0;
 });
 
-return rootCommand.Parse(args).Invoke();
+return await rootCommand.Parse(args).InvokeAsync();

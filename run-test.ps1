@@ -59,7 +59,7 @@ function Get-TrxSummary {
     }
 }
 
-function Invoke-TestProject {
+function Show-TestProject {
     param(
         [string] $ProjectFullName,
         [string] $Filter,
@@ -148,7 +148,7 @@ if ($testProjects.Count -eq 0) {
 
 $allPassed = $true
 foreach ($project in $testProjects) {
-    $passed = Invoke-TestProject -ProjectFullName $project.FullName -Filter $effectiveFilter -NoBuild $noBuild.IsPresent
+    $passed = Show-TestProject -ProjectFullName $project.FullName -Filter $effectiveFilter -NoBuild $noBuild.IsPresent
     if (-not $passed) { $allPassed = $false }
 }
 

@@ -40,7 +40,7 @@ public class ImapEmailServiceUnitTests
         var client = new Mock<IImapClient>();
         client.SetupGet(c => c.Inbox).Returns(inbox.Object);
 
-        var service = new ImapEmailService(CreateServer(), new HtmlToTextConverter(), _ => client.Object);
+        var service = new ImapEmailService(CreateServer(), _ => client.Object);
         return (service, inbox);
     }
 
@@ -95,7 +95,7 @@ public class ImapEmailServiceUnitTests
     [Test]
     public void Constructor_WithDefaultClientFactory_DoesNotThrow()
     {
-        Assert.DoesNotThrow(() => new ImapEmailService(CreateServer(), new HtmlToTextConverter()));
+        Assert.DoesNotThrow(() => new ImapEmailService(CreateServer()));
     }
 
     [Test]
