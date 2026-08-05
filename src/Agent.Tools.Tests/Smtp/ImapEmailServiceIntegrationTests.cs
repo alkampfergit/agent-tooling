@@ -73,11 +73,14 @@ public class ImapEmailServiceIntegrationTests
         Assert.That(emails, Is.Not.Empty, "Test mailbox should have unread emails");
 
         var first = emails[0];
-        Assert.That(first.Id, Is.Not.Null.And.Not.Empty);
-        Assert.That(first.From, Is.Not.Null.And.Not.Empty);
-        Assert.That(first.Subject, Is.Not.Null);
-        Assert.That(first.Date, Is.Not.EqualTo(DateTime.MinValue));
-        Assert.That(first.Preview, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(first.Id, Is.Not.Null.And.Not.Empty);
+            Assert.That(first.From, Is.Not.Null.And.Not.Empty);
+            Assert.That(first.Subject, Is.Not.Null);
+            Assert.That(first.Date, Is.Not.EqualTo(DateTime.MinValue));
+            Assert.That(first.Preview, Is.Not.Null);
+        }
     }
 
     [Test]
@@ -89,17 +92,20 @@ public class ImapEmailServiceIntegrationTests
         var service = new ImapEmailService(_testServer, converter);
         var emails = await service.GetUnreadEmailsAsync();
 
-        if (!emails.Any()) Assert.Ignore("No unread emails in test mailbox");
+        if (emails.Count == 0) Assert.Ignore("No unread emails in test mailbox");
 
         var firstEmailId = emails[0].Id;
         var details = await service.GetEmailDetailsAsync(firstEmailId);
 
         Assert.That(details, Is.Not.Null);
-        Assert.That(details!.Id, Is.EqualTo(firstEmailId));
-        Assert.That(details.From, Is.Not.Null.And.Not.Empty);
-        Assert.That(details.Subject, Is.Not.Null);
-        Assert.That(details.Body, Is.Not.Null);
-        Assert.That(details.Date, Is.Not.EqualTo(DateTime.MinValue));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(details!.Id, Is.EqualTo(firstEmailId));
+            Assert.That(details.From, Is.Not.Null.And.Not.Empty);
+            Assert.That(details.Subject, Is.Not.Null);
+            Assert.That(details.Body, Is.Not.Null);
+            Assert.That(details.Date, Is.Not.EqualTo(DateTime.MinValue));
+        }
     }
 
     [Test]
@@ -123,7 +129,7 @@ public class ImapEmailServiceIntegrationTests
         var service = new ImapEmailService(_testServer, converter);
 
         var unreadBefore = await service.GetUnreadEmailsAsync();
-        if (!unreadBefore.Any()) Assert.Ignore("No unread emails to mark as read");
+        if (unreadBefore.Count == 0) Assert.Ignore("No unread emails to mark as read");
 
         var emailId = unreadBefore[0].Id;
         var result = await service.MarkEmailAsReadAsync(emailId);
@@ -131,7 +137,7 @@ public class ImapEmailServiceIntegrationTests
         Assert.That(result, Is.True);
 
         var unreadAfter = await service.GetUnreadEmailsAsync();
-        Assert.That(unreadAfter.Count, Is.LessThan(unreadBefore.Count));
+        Assert.That(unreadAfter, Has.Count.LessThan(unreadBefore.Count));
     }
 
     [Test]
@@ -182,11 +188,11 @@ public class ImapEmailServiceIntegrationTests
         var results = await service.MarkEmailsAsReadAsync(new[] { validId, "999999" });
 
         Assert.That(results, Has.Count.EqualTo(2));
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(results.Single(r => r.Id == validId).Success, Is.True);
             Assert.That(results.Single(r => r.Id == "999999").Success, Is.False);
-        });
+        }
     }
 
     private static readonly string[] NonNumericIds = { "abc" };

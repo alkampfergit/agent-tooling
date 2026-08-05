@@ -237,12 +237,12 @@ public class ConfigurationProviderTests
             var provider = new ConfigurationProvider();
             var server = provider.GetServer(null);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(server.Type, Is.EqualTo("Office365"));
                 Assert.That(server.Username, Is.EqualTo("user@contoso.com"));
                 Assert.That(server.ClientId, Is.EqualTo("client-id"));
-            });
+            }
 
             Directory.SetCurrentDirectory(originalDir);
         }

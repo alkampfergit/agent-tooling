@@ -10,6 +10,10 @@ using EmailSummary = Smtp.Models.EmailSummary;
 
 public class GraphEmailService : IEmailService
 {
+    private static readonly string[] SummarySelect = { "id", "from", "subject", "receivedDateTime", "bodyPreview" };
+    private static readonly string[] SummaryOrderby = { "receivedDateTime desc" };
+    private static readonly string[] DetailsSelect = { "id", "from", "toRecipients", "ccRecipients", "subject", "receivedDateTime", "body" };
+
     private readonly ServerConfig _server;
     private readonly HtmlToTextConverter _htmlConverter;
     private readonly Func<ServerConfig, GraphServiceClient> _clientFactory;
@@ -34,8 +38,8 @@ public class GraphEmailService : IEmailService
             var messages = await client.Me.MailFolders["inbox"].Messages.GetAsync(cfg =>
             {
                 cfg.QueryParameters.Filter = "isRead eq false";
-                cfg.QueryParameters.Select = new[] { "id", "from", "subject", "receivedDateTime", "bodyPreview" };
-                cfg.QueryParameters.Orderby = new[] { "receivedDateTime desc" };
+                cfg.QueryParameters.Select = SummarySelect;
+                cfg.QueryParameters.Orderby = SummaryOrderby;
             });
 
             var summaries = new List<EmailSummary>();
@@ -69,7 +73,7 @@ public class GraphEmailService : IEmailService
             {
                 message = await client.Me.Messages[emailId].GetAsync(cfg =>
                 {
-                    cfg.QueryParameters.Select = new[] { "id", "from", "toRecipients", "ccRecipients", "subject", "receivedDateTime", "body" };
+                    cfg.QueryParameters.Select = DetailsSelect;
                 });
             }
             catch (ODataError ex) when (ex.ResponseStatusCode == 404)

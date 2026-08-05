@@ -47,7 +47,7 @@ public class ServerConfigValidationTests
         var server = new ServerConfig { Name = "primary", Type = "Imap" };
 
         var ex = Assert.Throws<InvalidOperationException>(() => server.Validate());
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("configured"));
             Assert.That(ex.Message, Does.Contain("Address"));
@@ -55,7 +55,7 @@ public class ServerConfigValidationTests
             Assert.That(ex.Message, Does.Contain("Username"));
             Assert.That(ex.Message, Does.Contain("Password"));
             Assert.That(ex.Message, Does.Contain("UseHttps"));
-        });
+        }
     }
 
     [Test]
@@ -104,11 +104,11 @@ public class ServerConfigValidationTests
         };
 
         var ex = Assert.Throws<InvalidOperationException>(() => server.Validate());
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("Address"));
             Assert.That(ex.Message, Does.Contain("must not be set"));
-        });
+        }
     }
 
     [Test]
@@ -117,10 +117,10 @@ public class ServerConfigValidationTests
         var server = new ServerConfig { Name = "weird", Type = "Pop3" };
 
         var ex = Assert.Throws<InvalidOperationException>(() => server.Validate());
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("Pop3"));
             Assert.That(ex.Message, Does.Contain("configured"));
-        });
+        }
     }
 }
