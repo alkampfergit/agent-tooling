@@ -1,5 +1,6 @@
 namespace Agent.Tools.Tests.Smtp;
 
+using System.Text.Json;
 using global::Smtp.Commands;
 
 [TestFixture]
@@ -10,6 +11,7 @@ public class MarkReadCommandTests
     private static readonly string[] SingleId = { "42" };
     private static readonly string[] ThreeIds = { "1", "2", "3" };
     private static readonly string[] FailedIds = { "2", "3" };
+    private static readonly string[] IdArgOne = { "--id", "1" };
 
     [Test]
     public void ParseIds_WithSingleId_ReturnsOneId()
@@ -138,6 +140,40 @@ public class MarkReadCommandTests
             throw new InvalidOperationException("Connection failed"));
 
         Assert.That(exitCode, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void Create_WithUnreachableServer_InvokeReturnsExitCodeTwo()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        var originalDir = Directory.GetCurrentDirectory();
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "unreachable", Address = "127.0.0.1", Port = 1, Username = "u", Password = "p", UseHttps = false }
+                    }
+                }
+            };
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), JsonSerializer.Serialize(config));
+
+            var command = MarkReadCommand.Create();
+            var exitCode = command.Parse(IdArgOne).Invoke();
+
+            Assert.That(exitCode, Is.EqualTo(2));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDir);
+            Directory.Delete(tempDir, true);
+        }
     }
 
     [Test]
