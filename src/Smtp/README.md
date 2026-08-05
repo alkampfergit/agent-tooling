@@ -77,14 +77,15 @@ Output:
 **Mark as read:**
 ```bash
 smtp mark-read --id 123
-smtp mark-read --id 123 --servername primary
+smtp mark-read --id 123,456,789 --servername primary
 ```
 
 Output:
 ```json
 {
-  "success": true,
-  "id": "123"
+  "total": 3,
+  "succeeded": 2,
+  "failed": ["456"]
 }
 ```
 
