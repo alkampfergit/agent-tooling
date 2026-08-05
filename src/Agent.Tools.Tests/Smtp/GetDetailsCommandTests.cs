@@ -9,6 +9,8 @@ using global::Smtp.Models;
 [Category("Unit")]
 public class GetDetailsCommandTests
 {
+    private static readonly string[] IdArgOne = { "--id", "1" };
+
     private static EmailDetails MakeDetails(string id)
     {
         return new EmailDetails
@@ -44,7 +46,7 @@ public class GetDetailsCommandTests
     {
         var exitCode = GetDetailsCommand.ExecuteCore("42", id => Task.FromResult<EmailDetails?>(MakeDetails(id)));
 
-        Assert.That(exitCode, Is.EqualTo(0));
+        Assert.That(exitCode, Is.Zero);
     }
 
     [Test]
@@ -87,7 +89,7 @@ public class GetDetailsCommandTests
             File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), JsonSerializer.Serialize(config));
 
             var command = GetDetailsCommand.Create();
-            var exitCode = command.Parse(new[] { "--id", "1" }).Invoke();
+            var exitCode = command.Parse(IdArgOne).Invoke();
 
             Assert.That(exitCode, Is.EqualTo(1));
         }

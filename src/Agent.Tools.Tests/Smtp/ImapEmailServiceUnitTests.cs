@@ -225,8 +225,11 @@ public class ImapEmailServiceUnitTests
         var details = await service.GetEmailDetailsAsync("43");
 
         Assert.That(details, Is.Not.Null);
-        Assert.That(details!.Body, Does.Not.Contain("<p>"));
-        Assert.That(details.Body, Does.Contain("Hello world"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(details!.Body, Does.Not.Contain("<p>"));
+            Assert.That(details.Body, Does.Contain("Hello world"));
+        }
     }
 
     [Test]

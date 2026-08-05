@@ -15,6 +15,10 @@ using Moq;
 [Category("Unit")]
 public class GraphEmailServiceUnitTests
 {
+    private static readonly string[] SingleId = { "1" };
+    private static readonly string[] ExpectedTo = { "to@example.com" };
+    private static readonly string[] ExpectedCc = { "cc@example.com" };
+
     private static ServerConfig CreateServer()
     {
         return new ServerConfig
@@ -57,13 +61,13 @@ public class GraphEmailServiceUnitTests
 
         var ex = Assert.ThrowsAsync<InvalidOperationException>(() => service.GetUnreadEmailsAsync());
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(ex!.Message, Does.Contain("o365"));
             Assert.That(ex.Message, Does.Contain("gnome-keyring"));
             Assert.That(ex.Message, Does.Contain("kwallet"));
             Assert.That(ex.InnerException, Is.TypeOf<CredentialUnavailableException>());
-        });
+        }
     }
 
     [Test]
@@ -83,7 +87,7 @@ public class GraphEmailServiceUnitTests
         var service = CreateServiceWithFailingClientFactory(
             new CredentialUnavailableException("Persistence check failed."));
 
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(() => service.MarkEmailsAsReadAsync(new[] { "1" }));
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(() => service.MarkEmailsAsReadAsync(SingleId));
 
         Assert.That(ex!.Message, Does.Contain("o365"));
     }
@@ -187,8 +191,8 @@ public class GraphEmailServiceUnitTests
         {
             Assert.That(details!.Id, Is.EqualTo("msg-2"));
             Assert.That(details.Subject, Is.EqualTo("Details"));
-            Assert.That(details.To, Is.EqualTo(new[] { "to@example.com" }));
-            Assert.That(details.Cc, Is.EqualTo(new[] { "cc@example.com" }));
+            Assert.That(details.To, Is.EqualTo(ExpectedTo));
+            Assert.That(details.Cc, Is.EqualTo(ExpectedCc));
             Assert.That(details.Body, Is.EqualTo("Plain body"));
         }
     }
@@ -248,7 +252,10 @@ public class GraphEmailServiceUnitTests
         var details = await service.GetEmailDetailsAsync("msg-3");
 
         Assert.That(details, Is.Not.Null);
-        Assert.That(details!.Body, Does.Not.Contain("<p>"));
-        Assert.That(details.Body, Does.Contain("Hello world"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(details!.Body, Does.Not.Contain("<p>"));
+            Assert.That(details.Body, Does.Contain("Hello world"));
+        }
     }
 }

@@ -26,7 +26,7 @@ public class SummaryCommandTests
     {
         var exitCode = SummaryCommand.ExecuteCore(30, () => Task.FromResult(new List<EmailSummary>()));
 
-        Assert.That(exitCode, Is.EqualTo(0));
+        Assert.That(exitCode, Is.Zero);
     }
 
     [Test]
@@ -48,7 +48,7 @@ public class SummaryCommandTests
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(exitCode, Is.EqualTo(0));
+            Assert.That(exitCode, Is.Zero);
             Assert.That(getUnreadResult, Is.Not.Null);
         }
     }
