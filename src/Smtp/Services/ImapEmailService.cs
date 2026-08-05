@@ -9,18 +9,18 @@ using Smtp.Models;
 using static MailKit.UniqueId;
 using MailKit.Security;
 
-public class EmailService
+public class ImapEmailService : IEmailService
 {
     private readonly ServerConfig _server;
     private readonly HtmlToTextConverter _htmlConverter;
     private readonly Func<ServerConfig, IImapClient> _clientFactory;
 
-    public EmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
+    public ImapEmailService(ServerConfig server, HtmlToTextConverter htmlConverter)
         : this(server, htmlConverter, ImapClientFactory.CreateClient)
     {
     }
 
-    internal EmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, IImapClient> clientFactory)
+    internal ImapEmailService(ServerConfig server, HtmlToTextConverter htmlConverter, Func<ServerConfig, IImapClient> clientFactory)
     {
         _server = server;
         _htmlConverter = htmlConverter;
@@ -29,16 +29,16 @@ public class EmailService
 
     public async Task<List<EmailSummary>> GetUnreadEmailsAsync()
     {
-        using var client = ImapClientFactory.CreateClient(_server);
+        using var client = _clientFactory(_server);
         var inbox = client.Inbox;
-        inbox.Open(FolderAccess.ReadOnly);
+        await inbox.OpenAsync(FolderAccess.ReadOnly);
 
         var summaries = new List<EmailSummary>();
-        var uids = inbox.Search(SearchQuery.NotSeen);
+        var uids = await inbox.SearchAsync(SearchQuery.NotSeen);
 
         foreach (var uid in uids)
         {
-            var message = inbox.GetMessage(uid);
+            var message = await inbox.GetMessageAsync(uid);
             summaries.Add(new EmailSummary
             {
                 Id = uid.ToString(),
@@ -57,15 +57,15 @@ public class EmailService
         if (!uint.TryParse(emailId, out var uidValue))
             throw new InvalidOperationException($"Invalid email ID: {emailId}");
 
-        using var client = ImapClientFactory.CreateClient(_server);
+        using var client = _clientFactory(_server);
         var inbox = client.Inbox;
-        inbox.Open(FolderAccess.ReadOnly);
+        await inbox.OpenAsync(FolderAccess.ReadOnly);
 
         var uid = new UniqueId(uidValue);
         MimeMessage? message;
         try
         {
-            message = inbox.GetMessage(uid);
+            message = await inbox.GetMessageAsync(uid);
         }
         catch (MessageNotFoundException)
         {
@@ -106,7 +106,7 @@ public class EmailService
     {
         using var client = _clientFactory(_server);
         var inbox = client.Inbox;
-        inbox.Open(FolderAccess.ReadWrite);
+        await inbox.OpenAsync(FolderAccess.ReadWrite);
 
         var results = new List<(string Id, bool Success)>();
         foreach (var emailId in emailIds)
@@ -154,7 +154,7 @@ public class EmailService
         return body.Length > 200 ? body.Substring(0, 200).Trim() + "..." : body.Trim();
     }
 
-    private string? ExtractBody(MimeMessage message)
+    private static string? ExtractBody(MimeMessage message)
     {
         if (message.HtmlBody != null)
             return message.HtmlBody;
@@ -165,12 +165,12 @@ public class EmailService
         return null;
     }
 
-    private bool IsHtmlContent(MimeMessage message)
+    private static bool IsHtmlContent(MimeMessage message)
     {
         return message.HtmlBody != null;
     }
 
-    private List<string> ExtractAddresses(InternetAddressList addresses)
+    private static List<string> ExtractAddresses(InternetAddressList addresses)
     {
         return addresses
             .OfType<MailboxAddress>()

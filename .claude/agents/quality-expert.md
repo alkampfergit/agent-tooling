@@ -36,8 +36,10 @@ pick one and invoke the agent once per tool.
 If no rule is named, do not default to running every rule. List the available rule ids
 (the `*.md` filenames in `rules/`, minus the extension, excluding `README.md`) and ask
 the caller which one to apply, e.g.: "quality-expert needs a rule to check for
-<ToolName>. Available rules: help-option, common-code-placement, test-categories. Which
-one should I run?" Wait for the caller's answer before doing anything else.
+<ToolName>. Available rules: help-option, common-code-placement, test-categories,
+code-coverage. Which one should I run?" Wait for the caller's answer before doing anything
+else. This example list is illustrative only — always re-read `rules/` at runtime rather
+than trusting this text, since new rule files can be added without updating this agent.
 
 If several rules are named explicitly, return the same message asking the caller to
 pick one and invoke the agent once per rule.

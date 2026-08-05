@@ -3,6 +3,7 @@ namespace Smtp.Commands;
 using System.CommandLine;
 using System.Text.Json;
 using Smtp.Configuration;
+using Smtp.Models;
 using Smtp.Services;
 using System.Linq;
 
@@ -51,15 +52,23 @@ public static class SummaryCommand
 
     private static int Execute(string? serverName, int limit)
     {
-        try
+        return ExecuteCore(limit, () =>
         {
             var configProvider = new ConfigurationProvider();
             var server = configProvider.GetServer(serverName);
 
             var htmlConverter = new HtmlToTextConverter();
-            var emailService = new EmailService(server, htmlConverter);
+            var emailService = EmailServiceFactory.Create(server, htmlConverter);
 
-            var summaries = emailService.GetUnreadEmailsAsync().GetAwaiter().GetResult();
+            return emailService.GetUnreadEmailsAsync();
+        });
+    }
+
+    internal static int ExecuteCore(int limit, Func<Task<List<EmailSummary>>> getUnreadEmails)
+    {
+        try
+        {
+            var summaries = getUnreadEmails().GetAwaiter().GetResult();
 
             // Sort by date (newest first) and apply limit
             var sorted = summaries
@@ -86,7 +95,7 @@ public static class SummaryCommand
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ExceptionFormatting.Chain(ex)}");
             return 2;
         }
     }

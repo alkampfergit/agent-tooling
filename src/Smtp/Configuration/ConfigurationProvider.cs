@@ -30,7 +30,10 @@ public class ConfigurationProvider
         if (string.IsNullOrWhiteSpace(serverName))
         {
             if (config.Servers.Count == 1)
+            {
+                config.Servers[0].Validate();
                 return config.Servers[0];
+            }
 
             var names = string.Join(", ", config.Servers.Select(s => s.Name));
             throw new InvalidOperationException(
@@ -47,6 +50,7 @@ public class ConfigurationProvider
                 $"Available: {names}");
         }
 
+        server.Validate();
         return server;
     }
 }

@@ -210,6 +210,88 @@ public class ConfigurationProviderTests
     }
 
     [Test]
+    public void GetServer_WithOffice365Type_BindsAndValidates()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var originalDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(tempDir);
+
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "o365", Type = "Office365", Username = "user@contoso.com", ClientId = "client-id", TenantId = "common" }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(config);
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
+
+            var provider = new ConfigurationProvider();
+            var server = provider.GetServer(null);
+
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(server.Type, Is.EqualTo("Office365"));
+                Assert.That(server.Username, Is.EqualTo("user@contoso.com"));
+                Assert.That(server.ClientId, Is.EqualTo("client-id"));
+            }
+
+            Directory.SetCurrentDirectory(originalDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
+    public void GetServer_WithOffice365MissingClientId_ThrowsFromValidate()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var originalDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(tempDir);
+
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "o365", Type = "Office365", Username = "user@contoso.com" }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(config);
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
+
+            var provider = new ConfigurationProvider();
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.GetServer(null));
+            Assert.That(ex!.Message, Does.Contain("ClientId"));
+
+            Directory.SetCurrentDirectory(originalDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
     public void GetServer_WithNoServers_ThrowsInvalidOperation()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

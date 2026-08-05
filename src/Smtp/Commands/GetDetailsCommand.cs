@@ -3,6 +3,7 @@ namespace Smtp.Commands;
 using System.CommandLine;
 using System.Text.Json;
 using Smtp.Configuration;
+using Smtp.Models;
 using Smtp.Services;
 
 public static class GetDetailsCommand
@@ -37,6 +38,20 @@ public static class GetDetailsCommand
 
     private static int Execute(string? id, string? serverName)
     {
+        return ExecuteCore(id, emailId =>
+        {
+            var configProvider = new ConfigurationProvider();
+            var server = configProvider.GetServer(serverName);
+
+            var htmlConverter = new HtmlToTextConverter();
+            var emailService = EmailServiceFactory.Create(server, htmlConverter);
+
+            return emailService.GetEmailDetailsAsync(emailId);
+        });
+    }
+
+    internal static int ExecuteCore(string? id, Func<string, Task<EmailDetails?>> getDetails)
+    {
         try
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -45,13 +60,7 @@ public static class GetDetailsCommand
                 return 2;
             }
 
-            var configProvider = new ConfigurationProvider();
-            var server = configProvider.GetServer(serverName);
-
-            var htmlConverter = new HtmlToTextConverter();
-            var emailService = new EmailService(server, htmlConverter);
-
-            var details = emailService.GetEmailDetailsAsync(id).GetAwaiter().GetResult();
+            var details = getDetails(id).GetAwaiter().GetResult();
             if (details == null)
             {
                 Console.Error.WriteLine($"Email ID {id} not found");
@@ -71,7 +80,7 @@ public static class GetDetailsCommand
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ExceptionFormatting.Chain(ex)}");
             return 2;
         }
     }
