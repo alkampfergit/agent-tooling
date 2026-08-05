@@ -19,6 +19,7 @@ Both files must contain a `Smtp` root key with server configuration:
       {
         "Name": "primary",
         "Type": "Imap",
+        "Default": true,
         "Address": "imap.example.com",
         "Port": 993,
         "Username": "user@example.com",
@@ -41,8 +42,11 @@ Each server entry has a `Type` field: `"Imap"` (default when omitted, preserving
 - `Imap`: `Address`, `Port`, `Username`, `Password`, `UseHttps` are required.
 - `Office365`: `Username` (the mailbox UPN/email to sign in as), `ClientId` (Entra app registration's Application ID) are required. `TenantId` is optional, defaults to `"common"`. `Address`, `Port`, `Password`, `UseHttps` are not used and must not be set.
 
-If only one server is configured, `--servername` is optional and defaults to that server.
-If multiple servers are configured and `--servername` is omitted, the command fails with an error.
+Each server entry also has an optional `Default` boolean field (defaults to `false`/omitted). It controls which server is used when `--servername` is omitted:
+- If only one server is configured, `--servername` is optional and that server is used regardless of `Default`.
+- If multiple servers are configured and `--servername` is omitted:
+  - If one or more servers have `Default: true`, the **first** one found (in config array order) is used.
+  - If none are marked `Default: true`, the command fails with an error listing the available server names.
 
 ## Office 365 / Microsoft Graph Support
 

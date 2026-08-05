@@ -193,9 +193,14 @@ Place in a parent directory (e.g., project root) to share across all tools:
 - `Password`: Email account password
 - `UseHttps`: `true` for secure connection (recommended)
 
+**Optional fields:**
+- `Type`: `"Imap"` (default) or `"Office365"`
+- `Default` (boolean, default `false`): marks this server as the fallback used when `--servername` is omitted and multiple servers are configured.
+
 ### Server Selection
 - **Single server**: `--servername` is optional; auto-selects the only configured server
-- **Multiple servers**: `--servername` is required; tool lists available servers if missing
+- **Multiple servers, one marked `Default: true`**: `--servername` is optional; the first `Default: true` server (in config order) is auto-selected
+- **Multiple servers, none marked `Default: true`**: `--servername` is required; tool lists available servers if missing
 - **No servers**: Error with helpful message
 
 ## Exit Codes

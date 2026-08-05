@@ -35,6 +35,13 @@ public class ConfigurationProvider
                 return config.Servers[0];
             }
 
+            var defaultServer = config.Servers.FirstOrDefault(s => s.Default == true);
+            if (defaultServer != null)
+            {
+                defaultServer.Validate();
+                return defaultServer;
+            }
+
             var names = string.Join(", ", config.Servers.Select(s => s.Name));
             throw new InvalidOperationException(
                 $"Multiple servers configured ({names}). " +
