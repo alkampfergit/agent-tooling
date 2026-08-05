@@ -101,6 +101,24 @@ public class MarkReadCommandTests
     }
 
     [Test]
+    public void ExecuteCore_WithIdsThatParseToEmptyList_ReturnsExitCodeTwoWithoutCallingMarkAsRead()
+    {
+        var called = false;
+
+        var exitCode = MarkReadCommand.ExecuteCore(", ,", _ =>
+        {
+            called = true;
+            return Task.FromResult(new List<(string Id, bool Success)>());
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(exitCode, Is.EqualTo(2));
+            Assert.That(called, Is.False);
+        });
+    }
+
+    [Test]
     public void ExecuteCore_WhenMarkAsReadThrowsConfigurationError_ReturnsExitCodeOne()
     {
         var exitCode = MarkReadCommand.ExecuteCore("1", _ =>
