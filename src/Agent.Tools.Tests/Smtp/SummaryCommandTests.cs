@@ -1,5 +1,6 @@
 namespace Agent.Tools.Tests.Smtp;
 
+using System.Text.Json;
 using global::Smtp.Commands;
 using global::Smtp.Models;
 
@@ -68,6 +69,31 @@ public class SummaryCommandTests
             throw new InvalidOperationException("Connection failed"));
 
         Assert.That(exitCode, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void Create_WithNoServersConfigured_InvokeReturnsExitCodeOne()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        var originalDir = Directory.GetCurrentDirectory();
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+            var config = new { Smtp = new { Servers = Array.Empty<object>() } };
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), JsonSerializer.Serialize(config));
+
+            var command = SummaryCommand.Create();
+            var exitCode = command.Parse(Array.Empty<string>()).Invoke();
+
+            Assert.That(exitCode, Is.EqualTo(1));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDir);
+            Directory.Delete(tempDir, true);
+        }
     }
 
     [Test]

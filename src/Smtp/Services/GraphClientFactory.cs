@@ -55,7 +55,7 @@ public static class GraphClientFactory
         return credential;
     }
 
-    private static string GetAuthRecordPath(ServerConfig server)
+    internal static string GetAuthRecordPath(ServerConfig server)
     {
         var baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         return Path.Combine(baseDir, "AgentTooling", "Smtp", $"{server.Name}.authrecord.json");
