@@ -4,6 +4,7 @@ public class ServerConfig
 {
     public required string Name { get; set; }
     public string Type { get; set; } = "Imap";
+    public bool Default { get; set; } = false;
     public string? Address { get; set; }
     public int? Port { get; set; }
     public string? Username { get; set; }

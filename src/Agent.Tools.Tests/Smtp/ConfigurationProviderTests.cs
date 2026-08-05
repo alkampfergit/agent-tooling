@@ -133,6 +133,169 @@ public class ConfigurationProviderTests
     }
 
     [Test]
+    public void GetServer_WithMultipleServersAndOneDefault_ReturnsDefault()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var originalDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(tempDir);
+
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "primary", Address = "imap1.test.com", Port = 993, Username = "user1", Password = "pass1", UseHttps = true, Default = true },
+                        new { Name = "secondary", Address = "imap2.test.com", Port = 993, Username = "user2", Password = "pass2", UseHttps = true, Default = false }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(config);
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
+
+            var provider = new ConfigurationProvider();
+            var server = provider.GetServer(null);
+
+            Assert.That(server, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(server.Name, Is.EqualTo("primary"));
+                Assert.That(server.Address, Is.EqualTo("imap1.test.com"));
+            }
+
+            Directory.SetCurrentDirectory(originalDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
+    public void GetServer_WithMultipleServersAndMultipleDefaults_ReturnsFirst()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var originalDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(tempDir);
+
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "primary", Address = "imap1.test.com", Port = 993, Username = "user1", Password = "pass1", UseHttps = true, Default = true },
+                        new { Name = "secondary", Address = "imap2.test.com", Port = 993, Username = "user2", Password = "pass2", UseHttps = true, Default = true }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(config);
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
+
+            var provider = new ConfigurationProvider();
+            var server = provider.GetServer(null);
+
+            Assert.That(server.Name, Is.EqualTo("primary"));
+
+            Directory.SetCurrentDirectory(originalDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
+    public void GetServer_WithMultipleServersAndNoDefault_ThrowsWithoutName()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var originalDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(tempDir);
+
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new[]
+                    {
+                        new { Name = "primary", Address = "imap1.test.com", Port = 993, Username = "user1", Password = "pass1", UseHttps = true, Default = false },
+                        new { Name = "secondary", Address = "imap2.test.com", Port = 993, Username = "user2", Password = "pass2", UseHttps = true, Default = false }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(config);
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
+
+            var provider = new ConfigurationProvider();
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.GetServer(null));
+            Assert.That(ex!.Message, Does.Contain("Multiple servers configured"));
+
+            Directory.SetCurrentDirectory(originalDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
+    public void GetServer_WithDefaultServerInvalid_ThrowsFromValidate()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var originalDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(tempDir);
+
+            var config = new
+            {
+                Smtp = new
+                {
+                    Servers = new object[]
+                    {
+                        new { Name = "primary", Address = "imap1.test.com", Port = 993, Username = "user1", UseHttps = true, Default = true },
+                        new { Name = "secondary", Address = "imap2.test.com", Port = 993, Username = "user2", Password = "pass2", UseHttps = true }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(config);
+            File.WriteAllText(Path.Combine(tempDir, "appsettings.json"), json);
+
+            var provider = new ConfigurationProvider();
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.GetServer(null));
+            Assert.That(ex!.Message, Does.Contain("Password"));
+
+            Directory.SetCurrentDirectory(originalDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Test]
     public void GetServer_WithValidName_ReturnsIt()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
