@@ -88,12 +88,32 @@ public class EmailService
 
     public async Task<bool> MarkEmailAsReadAsync(string emailId)
     {
-        if (!uint.TryParse(emailId, out var uidValue))
+        if (!uint.TryParse(emailId, out _))
             throw new InvalidOperationException($"Invalid email ID: {emailId}");
 
+        var results = await MarkEmailsAsReadAsync(new[] { emailId });
+        return results[0].Success;
+    }
+
+    public async Task<List<(string Id, bool Success)>> MarkEmailsAsReadAsync(IEnumerable<string> emailIds)
+    {
         using var client = ImapClientFactory.CreateClient(_server);
         var inbox = client.Inbox;
         inbox.Open(FolderAccess.ReadWrite);
+
+        var results = new List<(string Id, bool Success)>();
+        foreach (var emailId in emailIds)
+        {
+            results.Add((emailId, MarkSingleAsRead(inbox, emailId)));
+        }
+
+        return results;
+    }
+
+    private bool MarkSingleAsRead(IMailFolder inbox, string emailId)
+    {
+        if (!uint.TryParse(emailId, out var uidValue))
+            return false;
 
         var uid = new UniqueId(uidValue);
         MimeMessage? message;

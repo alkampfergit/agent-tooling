@@ -106,32 +106,35 @@ If the email has HTML content, it is converted to plain text using HtmlAgilityPa
 ---
 
 ### mark-read
-**Description:** Mark an email as read.
+**Description:** Mark one or more emails as read.
 
 **Syntax:**
 ```
-smtp mark-read --id <id> [--servername <name>]
+smtp mark-read --id <id[,id...]> [--servername <name>]
 ```
 
 **Arguments:**
 - (none)
 
 **Options:**
-- `--id <id>` (required): Email unique ID.
+- `--id <ids>` (required): Email unique ID, or a comma-separated list of IDs (e.g. `--id 1,2,3`). Whitespace around each ID is trimmed; empty entries are ignored.
 - `--servername <name>` (optional): Name of the configured server.
 
-**Output:** JSON success indicator.
+**Behavior:** Each ID is processed independently (best-effort) against a single opened inbox connection — a failure on one ID does not prevent the others from being processed.
+
+**Output:** JSON summary object.
 ```json
 {
-  "success": true,
-  "id": "1"
+  "total": 3,
+  "succeeded": 2,
+  "failed": ["2"]
 }
 ```
 
 **Exit codes:**
-- `0`: success
+- `0`: success (all IDs marked as read)
 - `1`: configuration error
-- `2`: runtime error (email not found, authentication failed)
+- `2`: runtime error (one or more IDs not found/invalid, or authentication failed)
 
 ---
 

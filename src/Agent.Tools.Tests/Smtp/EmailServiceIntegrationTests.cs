@@ -145,4 +145,58 @@ public class EmailServiceIntegrationTests
 
         Assert.That(result, Is.False);
     }
+
+    [Test]
+    public async Task MarkEmailsAsReadAsync_WithMultipleValidIds_ReturnsAllSuccess()
+    {
+        if (_testServer == null) Assert.Ignore("No test server");
+
+        var converter = new HtmlToTextConverter();
+        var service = new EmailService(_testServer, converter);
+
+        var unreadBefore = await service.GetUnreadEmailsAsync();
+        if (unreadBefore.Count < 2) Assert.Ignore("Not enough unread emails to mark as read");
+
+        var ids = unreadBefore.Take(2).Select(e => e.Id).ToList();
+        var results = await service.MarkEmailsAsReadAsync(ids);
+
+        Assert.That(results, Has.Count.EqualTo(2));
+        Assert.That(results.All(r => r.Success), Is.True);
+
+        var unreadAfter = await service.GetUnreadEmailsAsync();
+        Assert.That(unreadAfter.Count, Is.EqualTo(unreadBefore.Count - 2));
+    }
+
+    [Test]
+    public async Task MarkEmailsAsReadAsync_WithMixOfValidAndInvalidIds_ReturnsPartialFailure()
+    {
+        if (_testServer == null) Assert.Ignore("No test server");
+
+        var converter = new HtmlToTextConverter();
+        var service = new EmailService(_testServer, converter);
+
+        var unreadBefore = await service.GetUnreadEmailsAsync();
+        if (!unreadBefore.Any()) Assert.Ignore("No unread emails to mark as read");
+
+        var validId = unreadBefore[0].Id;
+        var results = await service.MarkEmailsAsReadAsync(new[] { validId, "999999" });
+
+        Assert.That(results, Has.Count.EqualTo(2));
+        Assert.That(results.Single(r => r.Id == validId).Success, Is.True);
+        Assert.That(results.Single(r => r.Id == "999999").Success, Is.False);
+    }
+
+    [Test]
+    public async Task MarkEmailsAsReadAsync_WithNonNumericId_ReturnsFalseNotException()
+    {
+        if (_testServer == null) Assert.Ignore("No test server");
+
+        var converter = new HtmlToTextConverter();
+        var service = new EmailService(_testServer, converter);
+
+        var results = await service.MarkEmailsAsReadAsync(new[] { "abc" });
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].Success, Is.False);
+    }
 }

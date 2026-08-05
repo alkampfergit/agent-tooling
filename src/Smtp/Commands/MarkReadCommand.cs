@@ -1,6 +1,7 @@
 namespace Smtp.Commands;
 
 using System.CommandLine;
+using System.Linq;
 using System.Text.Json;
 using Smtp.Configuration;
 using Smtp.Models;
@@ -12,7 +13,7 @@ public static class MarkReadCommand
     {
         var idOption = new Option<string?>("--id")
         {
-            Description = "Email unique ID (required)"
+            Description = "Email unique ID, or comma-separated list of IDs (required)"
         };
 
         var serverNameOption = new Option<string?>("--servername")
@@ -20,7 +21,7 @@ public static class MarkReadCommand
             Description = "Name of the configured server (optional if only one server configured)"
         };
 
-        var command = new Command("mark-read", "Mark an email as read")
+        var command = new Command("mark-read", "Mark one or more emails as read")
         {
             idOption,
             serverNameOption
@@ -46,25 +47,38 @@ public static class MarkReadCommand
                 return 2;
             }
 
+            var ids = id.Split(',')
+                .Select(x => x.Trim())
+                .Where(x => x.Length > 0)
+                .ToList();
+
+            if (ids.Count == 0)
+            {
+                Console.Error.WriteLine("--id is required");
+                return 2;
+            }
+
             var configProvider = new ConfigurationProvider();
             var server = configProvider.GetServer(serverName);
 
             var htmlConverter = new HtmlToTextConverter();
             var emailService = new EmailService(server, htmlConverter);
 
-            var success = emailService.MarkEmailAsReadAsync(id).GetAwaiter().GetResult();
+            var results = emailService.MarkEmailsAsReadAsync(ids).GetAwaiter().GetResult();
+            var failed = results.Where(r => !r.Success).Select(r => r.Id).ToList();
 
-            var result = new MarkReadResult
+            var summary = new MarkReadSummary
             {
-                Success = success,
-                Id = id
+                Total = results.Count,
+                Succeeded = results.Count(r => r.Success),
+                Failed = failed
             };
 
             // Compact JSON for single objects (no indentation for token efficiency)
-            var json = JsonSerializer.Serialize(result);
+            var json = JsonSerializer.Serialize(summary);
             Console.WriteLine(json);
 
-            return success ? 0 : 2;
+            return failed.Count == 0 ? 0 : 2;
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("configured") || ex.Message.Contains("Multiple"))
         {
